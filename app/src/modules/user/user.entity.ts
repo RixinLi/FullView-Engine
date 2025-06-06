@@ -1,0 +1,20 @@
+import { Entity,Column, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+
+@Entity('user')
+export class User {
+
+    @PrimaryColumn({ type: 'varchar', length:255, comment: '用户唯一标识符' })
+    id: string;
+
+    @Column({ type: 'varchar', length: 255, nullable: true, comment: '账户' })
+    username?: string;
+
+    @Column({ type: 'varchar', length: 255, nullable: true, comment: '密码' })
+    password?: string;
+
+    @Column({ type: 'varchar', length: 255, nullable: true, comment: '用户名' })
+    name?: string;
+
+    @Column({ type: 'varchar', length: 255, nullable: true, comment: '用户角色属性' })
+    role?: string;
+}

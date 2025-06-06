@@ -1,0 +1,140 @@
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query, HttpStatus, HttpCode, HttpException, UseInterceptors, filterLogLevels } from '@nestjs/common';
+import { CompanyService } from './company.service';
+import { CreateCompanyDto } from './dto/create-company.dto';
+import { UpdateCompanyDto } from './dto/update-company.dto';
+import { QueryCompanyDto } from './dto/query-company.dto';
+import { Result } from 'src/common/result';
+import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
+import { ResponseCompanyDto } from './dto/response-company.dto';
+import { plainToClass } from 'class-transformer';
+import { FilterQueryCompanyDto } from './dto/filter-query-company.dto';
+
+@Controller('company')
+export class CompanyController {
+  
+  constructor(private readonly companyService: CompanyService) {}
+
+  /*
+  查询
+  */
+  @Get('findAll')
+  async findAllCompanies(@Body() filterDto: FilterQueryCompanyDto){
+
+    // 取出数据优先filter
+
+    if(!filterDto) throw new HttpException(Result.error('请带上合理请求', HttpStatus.INTERNAL_SERVER_ERROR.toString()), HttpStatus.INTERNAL_SERVER_ERROR)
+    
+    const allData = await this.companyService.findAll(filterDto);
+
+    // 开始处理信息
+    const groupedData = {
+        dimension: filterDto.dimension || [],
+        data: {},
+        filter: filterDto.filter // 稍后实现
+    };
+
+    if(groupedData.dimension.length===0){
+      groupedData.data = allData;
+      return Result.success(groupedData);
+    } 
+    
+    var filteredData = allData;
+
+    if(filterDto.filter){
+        filteredData = allData.filter(company => {
+          return (
+              (!filterDto.filter?.level || (company.level !== undefined && filterDto.filter.level.includes(company.level))) &&
+              (!filterDto.filter?.country || (company.country&& filterDto.filter.country.includes(company.country))) &&
+              (!filterDto.filter?.city || (company.city !== undefined && filterDto.filter.city.includes(company.city))) &&
+              (!filterDto.filter?.founded_year?.start || (company.founded_year !== undefined && company.founded_year >= filterDto.filter.founded_year.start)) &&
+              (!filterDto.filter?.founded_year?.end || (company.founded_year !== undefined && company.founded_year <= filterDto.filter.founded_year.end)) &&
+              (!filterDto.filter?.annual_revenue?.min || (company.annual_revenue !== undefined && company.annual_revenue >= filterDto.filter.annual_revenue.min)) &&
+              (!filterDto.filter?.annual_revenue?.max || (company.annual_revenue !== undefined && company.annual_revenue <= filterDto.filter.annual_revenue.max)) &&
+              (!filterDto.filter?.employees?.min || (company.employees !== undefined && company.employees >= filterDto.filter.employees.min)) &&
+              (!filterDto.filter?.employees?.max || (company.employees !== undefined && company.employees <= filterDto.filter.employees.max)) 
+             
+          );
+      });
+    }
+
+    groupedData.dimension.forEach((dim) => {
+
+        groupedData.data[dim] = filteredData
+            .reduce((acc, company) => {
+                const key = company[dim]; // 动态字段访问
+                if(acc[dim.toString()+": "+key]===undefined) acc[dim.toString()+": "+key] = [];
+                acc[dim.toString()+": "+key].push(company);
+                return acc;
+            }, {});
+
+        // 对子 key 进行字典排序
+        groupedData.data[dim] = Object.keys(groupedData.data[dim])
+            .sort() // 按字母顺序排序
+            .reduce((sortedAcc, key) => {
+                sortedAcc[key] = groupedData.data[dim][key];
+                return sortedAcc;
+            }, {});
+    });
+        
+    return Result.success(groupedData);
+  }
+
+  @Get('findOne')
+  async findOneCompany(@Body() body: QueryCompanyDto){
+    const res = await this.companyService.findOne(body);
+    if(!res){
+      throw new HttpException(Result.error('未能找到对应的公司', HttpStatus.NOT_FOUND.toString()), HttpStatus.NOT_FOUND);
+    }
+    return Result.success(plainToClass(ResponseCompanyDto,res,{ excludeExtraneousValues: true }));
+  }
+
+
+  /*
+  创建 create
+  */
+ @Post('createOne')
+ async insertOneCompany(@Body() body: CreateCompanyDto){
+    await this.companyService.createOneCompany(body);
+    
+    // 查询创建后的数据
+    const createdCompany = await this.companyService.findOne(body);
+    
+    if (!createdCompany) {
+        throw new HttpException(Result.error('创建公司失败', HttpStatus.BAD_REQUEST.toString()), HttpStatus.BAD_REQUEST);
+    }
+    return Result.success(createdCompany,HttpStatus.CREATED.toString(),'创建公司成功');
+ }
+
+
+ /*
+  更新 update
+  */
+ @Patch('updateOne')
+ async UpdateOneCompany(@Body() body: UpdateCompanyDto){
+
+    await this.companyService.updateOneCompany(body);
+    
+    // 重新查询更新后的数据
+    const updatedCompany = await this.companyService.findOne(body);
+    
+    if (!updatedCompany) {
+        throw new HttpException(Result.error('更新公司失败', HttpStatus.BAD_REQUEST.toString()), HttpStatus.BAD_REQUEST);
+    } 
+    return Result.success(updatedCompany,HttpStatus.OK.toString(),'更新公司成功');
+ }
+
+  /*
+  删除
+  */
+  @Delete('deleteOne')
+  async deleteOneCompany(@Query('company_code') company_code:string){
+      const res:DeleteResult =  await this.companyService.deleteOneCompany(company_code);
+
+      if(res.affected && res.affected>0){
+        return Result.success(res.affected,HttpStatus.OK.toString(),'删除成功,公司数目为：'+res.affected);
+      }else{
+        throw new HttpException(Result.error('删除公司失败', HttpStatus.BAD_REQUEST.toString()), HttpStatus.BAD_REQUEST);
+      }
+
+  }
+}
