@@ -52,6 +52,23 @@ export class UserService {
     }
   }
 
+  async findbyUsername(username: string): Promise<User | null>{
+    
+    try{
+      return await this.userRepository.findOne({
+      where:{
+        username: username
+      }
+    });
+    }catch(error){
+      console.error('该用户名不存在:'+error.message);
+      throw new HttpException(
+         Result.error('数据库错误'),
+         HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
   /*
   创建
   */
