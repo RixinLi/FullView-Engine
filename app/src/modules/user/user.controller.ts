@@ -61,18 +61,14 @@ export class UserController {
     return Result.success(updatedUser,HttpStatus.OK.toString(),'更新用户成功');
  }
 
-//   /*
-//   删除
-//   */
-//   @Delete('deleteOne')
-//   async deleteOneUser(@Query('user_code') user_code:string){
-//       const res:DeleteResult =  await this.userService.deleteOneUser(user_code);
+  /*
+  删除
+  */
+  @Delete('delete')
+  async deleteOneUser(@Query('id') id:string){
+      const deleteUser = await this.userService.delete(id);
 
-//       if(res.affected && res.affected>0){
-//         return Result.success(res.affected,HttpStatus.OK.toString(),'删除成功,用户数目为：'+res.affected);
-//       }else{
-//         throw new HttpException(Result.error('删除用户失败', HttpStatus.BAD_REQUEST.toString()), HttpStatus.BAD_REQUEST);
-//       }
+      return Result.success(deleteUser,"200","删除用户成功");
 
-//   }
+  }
 }

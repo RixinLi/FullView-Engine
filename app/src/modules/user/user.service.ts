@@ -111,32 +111,30 @@ export class UserService {
   /*
   删除
   */
-  // async deleteOneUser(@Param('user_code') user_code:string): Promise<DeleteResult>{
-  //     try {
-  //       // 判断是否为空
-  //       if (!user_code) {
-  //         throw new HttpException(Result.error('用户代码不能为空',HttpStatus.BAD_REQUEST.toString()), HttpStatus.BAD_REQUEST);
-  //       }
-  //       // 数据库进行更新操作
-  //       const result =  await this.userRepository.delete({user_code:user_code});
+  async delete(id: string): Promise<User | null>{
+    
+      // 判断是否为空
+      
+      if (!id) {
+        throw new HttpException(Result.error('用户uuid不能为空',HttpStatus.BAD_REQUEST.toString()), HttpStatus.BAD_REQUEST);
+      }
 
-  //       // 操作result
-  //       if (result.affected === 0) {
-  //         throw new HttpException(Result.error('未找到用户或删除失败',HttpStatus.NOT_FOUND.toString()), HttpStatus.NOT_FOUND);
-  //       }
-  //       return result;
-  //     } catch (error) {
-  //       console.error('删除用户失败:'+error.message);
-  //       // 根据错误类型返回不同的 HTTP 状态码
-  //       if (error.code === 'ER_ROW_IS_REFERENCED_2') {
-  //         throw new HttpException(Result.error('用户仍被引用，无法删除',HttpStatus.CONFLICT.toString()), HttpStatus.CONFLICT);
-  //       }
-  //       throw new HttpException(
-  //         Result.error('数据库错误'),
-  //         HttpStatus.INTERNAL_SERVER_ERROR
-  //       );
-  //     }
-  // }s
+      // 先找到用户
+      const existingUser = await this.userRepository.findOne({ where: { id: id } });
+      if(!existingUser){
+        throw new HttpException(Result.success({},'未找到用户',HttpStatus.NOT_FOUND.toString()), HttpStatus.NOT_FOUND);
+      }
+
+      // 数据库进行删除操作
+      const result =  await this.userRepository.delete({id});
+    
+      // 操作result
+      if (result.affected === 0) {
+        throw new HttpException(Result.error('删除失败',HttpStatus.NOT_FOUND.toString()), HttpStatus.CONFLICT);
+      }
+      
+      return existingUser;
+  }
 
 }
 
