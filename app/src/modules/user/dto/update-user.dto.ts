@@ -1,18 +1,14 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateUserDto } from './create-user.dto';
+import { OmitType } from '@nestjs/mapped-types';
+import { Exclude } from 'class-transformer';
 import { IsOptional, IsString } from 'class-validator';
 import { USER_ROLE_ENUM } from 'src/common/enum/userEnum';
+import { CreateUserDto } from './create-user.dto';
 
-export class UpdateUserDto extends PartialType(CreateUserDto) {
+export class UpdateUserDto extends OmitType(CreateUserDto,['username']){
 
     // uuid
     @IsString()
     id:string
-
-    // username
-    @IsString()
-    @IsOptional()
-    username:string;
 
     // passwords
     @IsOptional()

@@ -3,10 +3,10 @@ import { Entity,Column, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 @Entity('user')
 export class User {
 
-    @PrimaryColumn({ type: 'varchar', length:255, comment: '用户唯一标识符' })
+    @PrimaryColumn({ type: 'varchar', length:255, comment: '用户唯一标识符', update:false })
     id: string;
 
-    @Column({ type: 'varchar', length: 255, nullable: true, comment: '账户' })
+    @Column({ type: 'varchar', length: 255, nullable: true, comment: '账户', update:false })
     username?: string;
 
     @Column({ type: 'varchar', length: 255, nullable: true, comment: '密码' })

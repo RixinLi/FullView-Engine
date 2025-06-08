@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable, UnauthorizedException } from "@n
 import { UserService } from "../user/user.service";
 import * as crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
-import { PASSWORD_SALT } from "./constants";
+import { PASSWORD_SALT } from "./common/constants";
 import { Result } from "src/common/result";
 import { USER_ROLE_ENUM } from "src/common/enum/userEnum";
 import { CreateUserDto } from "../user/dto/create-user.dto";
@@ -34,7 +34,7 @@ export class AuthService{
         }
 
         // 验证正确后 准备返回JWT token
-        const payload = {sub: dbUser.id, username: dbUser.username};
+        const payload = {id: dbUser.id, username: dbUser.username};
         return {
             access_token: await this.jwtService.signAsync(payload),
         };

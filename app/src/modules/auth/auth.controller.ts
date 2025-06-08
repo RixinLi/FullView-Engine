@@ -1,9 +1,11 @@
-import { Body, Controller, Post, RequestMapping } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards, Request } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginInfo } from "./dto/login-info.dto";
 import { Result } from "src/common/result";
 import { RegisterInfo } from "./dto/register-info.dto";
 import { randomUUID } from "crypto";
+import { AuthGuard } from "./auth.guard";
+import { Public } from "./common/auth.decorator";
 
 
 
@@ -11,6 +13,8 @@ import { randomUUID } from "crypto";
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
+    @Public()
+    @HttpCode(HttpStatus.OK)
     @Post('login')
     async login(@Body() body: LoginInfo) {
         // console.log(body);
@@ -18,10 +22,24 @@ export class AuthController {
         return Result.success(data,"200","登录成功");
     }
 
+    @Public()
+    @HttpCode(HttpStatus.CREATED)
     @Post('register')
     async register(@Body() body: RegisterInfo){
         // console.log(body);
         await this.authService.register(body.username,body.password,body.uuid);
         return Result.success({token:randomUUID()},"200","注册成功");
+    }
+
+
+    @Get('profile')
+    getProfile(@Request() req) {
+        return req.user;
+    }   
+
+    @Public()
+    @Get('hello')
+    hello(@Request() req){
+        return "Hello, this is a public function without checking token";
     }
 }

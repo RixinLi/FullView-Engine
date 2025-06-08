@@ -4,10 +4,11 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { QueryUserDto } from './dto/query-user.dto';
 import { Result } from 'src/common/result';
-import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
 import { ResponseUserDto } from './dto/response-user.dto';
 import { plainToClass } from 'class-transformer';
+import { Public } from '../auth/common/auth.decorator';
 
+@Public()
 @Controller('user')
 export class UserController {
   
@@ -38,10 +39,9 @@ export class UserController {
   */
  @Post('create')
  async insertOneUser(@Body() body: CreateUserDto){
-    
+    await this.userService.createOneUser(body);
     // 查询创建后的数据
-    const createdUser = await this.userService.createOneUser(body);
-    
+    const createdUser = this.userService.findOne(body);
     if (!createdUser) {
         throw new HttpException(Result.error('创建用户失败', HttpStatus.BAD_REQUEST.toString()), HttpStatus.BAD_REQUEST);
     }
@@ -55,9 +55,11 @@ export class UserController {
  @Patch('update')
  async UpdateOneUser(@Body() body: UpdateUserDto){
 
-    // 重新查询更新后的数据
-    const updatedUser = await this.userService.update(body);
-
+    await this.userService.update(body);
+    const updatedUser = await this.userService.findOne(body);
+    if (!updatedUser) {
+          throw new HttpException(Result.error('更新用户失败,用户名和id无法更改', HttpStatus.BAD_REQUEST.toString()), HttpStatus.BAD_REQUEST);
+    }
     return Result.success(updatedUser,HttpStatus.OK.toString(),'更新用户成功');
  }
 

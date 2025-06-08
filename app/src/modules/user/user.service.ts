@@ -33,7 +33,7 @@ export class UserService {
     
   }
 
-  async findOne(@Body() body:QueryUserDto): Promise<User | null>{
+  async findOne(body:any): Promise<User | null>{
     
 
     try{
@@ -72,7 +72,7 @@ export class UserService {
   /*
   创建
   */
-  async createOneUser(@Body() body:CreateUserDto): Promise<User | null>{
+  async createOneUser(body:any): Promise<void>{
 
       // **先检查 UUID 是否已存在**
       const existingUser = await this.userRepository.findOne({ where: { id: body.id } });
@@ -81,7 +81,7 @@ export class UserService {
       }
 
       try {
-        return await this.userRepository.save(body)
+        await this.userRepository.save(body)
       } catch (error) {
         console.error('创建用户失败:'+error.message);
         // 根据错误类型返回不同的 HTTP 状态码
@@ -98,7 +98,7 @@ export class UserService {
   /*
   更新
   */
-  async update(@Body() body:UpdateUserDto): Promise<User | null>{
+  async update(body:any): Promise<void>{
       // 确保 body 里有 id 或其他唯一标识符
       if (!body.id) {
         throw new HttpException(Result.error('缺少用户的ID',HttpStatus.BAD_REQUEST.toString()), HttpStatus.BAD_REQUEST);
@@ -110,7 +110,7 @@ export class UserService {
       }
       try {
         // 数据库进行更新操作
-        return await this.userRepository.save(body);
+        await this.userRepository.save(body);
       } catch (error) {
         console.error('更新用户失败:'+error.message);
         if (error.code === 'ER_DUP_ENTRY' || error.code === '1062') {
