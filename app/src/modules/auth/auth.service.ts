@@ -1,12 +1,10 @@
 import { HttpException, HttpStatus, Injectable, UnauthorizedException } from "@nestjs/common";
 import { UserService } from "../user/user.service";
-import * as crypto from 'crypto';
-import { v4 as uuidv4 } from 'uuid';
-import { PASSWORD_SALT } from "./common/constants";
 import { Result } from "src/common/result";
 import { USER_ROLE_ENUM } from "src/common/enum/userEnum";
 import { CreateUserDto } from "../user/dto/create-user.dto";
 import { JwtService } from '@nestjs/jwt';
+import { generateUUID, hashSaltPassword } from "src/utils/userInfo.utils";
 
 @Injectable()
 export class AuthService{
@@ -16,20 +14,11 @@ export class AuthService{
         private jwtService: JwtService
     ) {}
 
-    // 登录注册使用的加密函数：
-    private hashSaltPassword(password: string, salt: string = PASSWORD_SALT): string {
-        return crypto.createHash('md5').update(password+salt).digest('hex');
-    }
-
-    // uuid 生成器
-    private generateUUID(): string{
-        return uuidv4().replace(/-/g,'');
-    }
 
     // 登录
     async signIn(username:string, password:string):Promise<{ access_token: string }>{
         const dbUser = await this.userService.findbyUsername(username);
-        if(dbUser?.password != this.hashSaltPassword(password)){
+        if(dbUser?.password != hashSaltPassword(password)){
             throw new UnauthorizedException({message:"密码错误，注意密码是加盐的"});
         }
 
@@ -49,9 +38,9 @@ export class AuthService{
         }
 
         const user:CreateUserDto = {
-            id: uuid || this.generateUUID(),
+            id: uuid || generateUUID(),
             username: username,
-            password: this.hashSaltPassword(password),
+            password: hashSaltPassword(password),
             name: username,
             role: USER_ROLE_ENUM.USER
         }

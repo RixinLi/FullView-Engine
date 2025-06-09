@@ -3,6 +3,7 @@ import { CompanyModule } from './modules/company/company.module';
 import { DatabaseModule } from './modules/database/database.module';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CaslModule } from './modules/auth/casl/caslModule';
 
 
 @Module({
@@ -10,7 +11,8 @@ import { AuthModule } from './modules/auth/auth.module';
     DatabaseModule,
     CompanyModule,
     UserModule,
-    AuthModule
+    AuthModule,
+    CaslModule
   ],
 })
 export class AppModule { }

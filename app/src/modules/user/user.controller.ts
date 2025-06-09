@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query, HttpStatus, HttpCode, HttpException, UseInterceptors, filterLogLevels } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query, HttpStatus, HttpCode, HttpException, UseInterceptors, filterLogLevels, UseGuards, ForbiddenException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -6,9 +6,12 @@ import { QueryUserDto } from './dto/query-user.dto';
 import { Result } from 'src/common/result';
 import { ResponseUserDto } from './dto/response-user.dto';
 import { plainToClass } from 'class-transformer';
-import { Public } from '../auth/common/auth.decorator';
+import { CheckPolicies, Public } from '../auth/common/auth.decorator';
+import { PoliciesGuard } from '../auth/policies.guard';
+import { AppAbility } from '../auth/casl/casl-ability.factory';
+import { Action } from '../auth/common/auth.constants';
+import { User } from './user.entity';
 
-@Public()
 @Controller('user')
 export class UserController {
   
@@ -52,9 +55,24 @@ export class UserController {
  /*
   更新 update
   */
+ @UseGuards(PoliciesGuard)
+ @CheckPolicies((ability: AppAbility, request:any) => 
+    {
+        // 如果用户具有 Manage 权限，直接允许
+      if (ability.can(Action.Manage, "all")) {
+        return true;
+      }
+
+      const targerUser:User = {id: request.body.id};
+      // 检查 Update 权限
+      if (!ability.can(Action.Update, targerUser)) {
+        throw new ForbiddenException('你没有权限更新该用户信息');
+      }
+      return true;
+    }  
+ )
  @Patch('update')
  async UpdateOneUser(@Body() body: UpdateUserDto){
-
     await this.userService.update(body);
     const updatedUser = await this.userService.findOne(body);
     if (!updatedUser) {

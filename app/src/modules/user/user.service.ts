@@ -6,14 +6,19 @@ import { Result } from 'src/common/result';
 import { CreateUserDto } from './dto/create-user.dto';
 import { QueryUserDto } from './dto/query-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { hashSaltPassword } from 'src/utils/userInfo.utils';
 
 @Injectable()
 export class UserService {
+
+  
   
   constructor(
     @Inject(Repository_Dependency_Constants.user)
     private readonly userRepository: Repository<User>,
   ) {}
+
+  
 
   /*
   查询
@@ -108,6 +113,15 @@ export class UserService {
       if (!existingUser) {
         throw new HttpException(Result.error('用户不存在,更新失败', HttpStatus.CONFLICT.toString()), HttpStatus.CONFLICT);
       }
+
+      // 判断密码是否有改变
+      if(body.password){
+          if(existingUser.password != hashSaltPassword(body.password)){
+            body.password = hashSaltPassword(body.password);
+          }
+      }
+      
+
       try {
         // 数据库进行更新操作
         await this.userRepository.save(body);

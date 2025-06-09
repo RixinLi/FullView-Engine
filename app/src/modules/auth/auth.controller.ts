@@ -3,11 +3,9 @@ import { AuthService } from "./auth.service";
 import { LoginInfo } from "./dto/login-info.dto";
 import { Result } from "src/common/result";
 import { RegisterInfo } from "./dto/register-info.dto";
-import { randomUUID } from "crypto";
-import { AuthGuard } from "./auth.guard";
 import { Public, Roles } from "./common/auth.decorator";
 import { RolesGuard } from "./roles.guard";
-import { Role } from "./common/role.enum";
+import { Role } from "./common/auth.constants";
 
 
 
@@ -34,7 +32,7 @@ export class AuthController {
     }
 
     @UseGuards(RolesGuard)
-    @Roles(Role.ADMIN)
+    @Roles(Role.ADMIN,Role.USER)
     @Get('profile')
     getProfile(@Request() req) {
         return req.user;
