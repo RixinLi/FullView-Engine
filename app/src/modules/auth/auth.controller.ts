@@ -5,7 +5,9 @@ import { Result } from "src/common/result";
 import { RegisterInfo } from "./dto/register-info.dto";
 import { randomUUID } from "crypto";
 import { AuthGuard } from "./auth.guard";
-import { Public } from "./common/auth.decorator";
+import { Public, Roles } from "./common/auth.decorator";
+import { RolesGuard } from "./roles.guard";
+import { Role } from "./common/role.enum";
 
 
 
@@ -28,10 +30,11 @@ export class AuthController {
     async register(@Body() body: RegisterInfo){
         // console.log(body);
         await this.authService.register(body.username,body.password,body.uuid);
-        return Result.success({token:randomUUID()},"200","注册成功");
+        return Result.success({username:body.username},"200","注册成功");
     }
 
-
+    @UseGuards(RolesGuard)
+    @Roles(Role.ADMIN)
     @Get('profile')
     getProfile(@Request() req) {
         return req.user;

@@ -30,11 +30,11 @@ export class AuthService{
     async signIn(username:string, password:string):Promise<{ access_token: string }>{
         const dbUser = await this.userService.findbyUsername(username);
         if(dbUser?.password != this.hashSaltPassword(password)){
-            throw new UnauthorizedException();
+            throw new UnauthorizedException({message:"密码错误，注意密码是加盐的"});
         }
 
         // 验证正确后 准备返回JWT token
-        const payload = {id: dbUser.id, username: dbUser.username};
+        const payload = {id: dbUser.id, username: dbUser.username, role:dbUser.role};
         return {
             access_token: await this.jwtService.signAsync(payload),
         };

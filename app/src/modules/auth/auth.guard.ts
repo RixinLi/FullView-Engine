@@ -19,7 +19,7 @@ export class AuthGuard implements CanActivate{
 
      async canActivate(context: ExecutionContext): Promise<boolean>{
 
-        // 判断是否需要验证身份才能通行
+        // 判断是否需要token验证身份才能通行
         const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
             context.getHandler(),
             context.getClass(),
@@ -44,7 +44,6 @@ export class AuthGuard implements CanActivate{
         }catch{
             throw new UnauthorizedException({message:"token校验失败"});
         };
-
 
         return true;
      }
