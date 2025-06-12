@@ -5,10 +5,8 @@ import { DatabaseModule } from '../database/database.module';
 import { CompanyProviders } from './company.providers';
 
 @Module({
-  imports:[DatabaseModule],
+  imports: [DatabaseModule],
   controllers: [CompanyController],
-  providers: [
-    ...CompanyProviders,
-    CompanyService],
+  providers: [...CompanyProviders, CompanyService],
 })
 export class CompanyModule {}

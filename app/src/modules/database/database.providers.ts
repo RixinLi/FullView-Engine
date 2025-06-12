@@ -8,14 +8,12 @@ export const databaseProviders = [
     useFactory: async () => {
       const dataSource = new DataSource({
         type: 'mysql',
-        host: typeormConfig.host||'localhost',
-        port: typeormConfig.port||3306,
-        username: typeormConfig.username||'root',
-        password: typeormConfig.password||'root',
-        database: typeormConfig.database||'baidu-project',
-        entities: [
-            __dirname + '/../**/*.entity{.ts,.js}',
-        ],
+        host: typeormConfig.host || 'localhost',
+        port: typeormConfig.port || 3306,
+        username: typeormConfig.username || 'root',
+        password: typeormConfig.password || 'root',
+        database: typeormConfig.database || 'baidu-project',
+        entities: [__dirname + '/../**/*.entity{.ts,.js}'],
         synchronize: false,
       });
       return dataSource.initialize();

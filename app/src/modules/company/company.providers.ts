@@ -1,4 +1,3 @@
-
 import { DataSource } from 'typeorm';
 import { Company } from './company.entity';
 import { Repository_Dependency_Constants } from 'src/common/constants';

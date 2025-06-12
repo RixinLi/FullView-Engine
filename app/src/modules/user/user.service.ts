@@ -10,163 +10,160 @@ import { hashSaltPassword } from 'src/utils/userInfo.utils';
 
 @Injectable()
 export class UserService {
-
-  
-  
   constructor(
     @Inject(Repository_Dependency_Constants.user)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>
   ) {}
-
-  
 
   /*
   查询
   */
   async findAll(): Promise<User[]> {
-    
-    try{
+    try {
       return await this.userRepository.find();
-    
-    }catch(error){
-      console.error('查询所有用户失败:'+error.message);
-      throw new HttpException(
-        Result.error('数据库错误'),
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
-    
-  }
-
-  async findOne(body:any): Promise<User | null>{
-    
-
-    try{
-      return await this.userRepository.findOne({
-      where:{
-        id: body.id,
-        username: body.username
-      }
-    });
-    }catch(error){
-      console.error('查询对应用户失败:'+error.message);
-      throw new HttpException(
-         Result.error('数据库错误'),
-         HttpStatus.INTERNAL_SERVER_ERROR
-      );
+    } catch (error) {
+      console.error('查询所有用户失败:' + error.message);
+      throw new HttpException(Result.error('数据库错误'), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  async findbyUsername(username: string): Promise<User | null>{
-    
-    try{
+  async findOne(body: any): Promise<User | null> {
+    try {
       return await this.userRepository.findOne({
-      where:{
-        username: username
-      }
-    });
-    }catch(error){
-      console.error('该用户名不存在:'+error.message);
-      throw new HttpException(
-         Result.error('数据库错误'),
-         HttpStatus.INTERNAL_SERVER_ERROR
-      );
+        where: {
+          id: body.id,
+          username: body.username,
+        },
+      });
+    } catch (error) {
+      console.error('查询对应用户失败:' + error.message);
+      throw new HttpException(Result.error('数据库错误'), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async findbyUsername(username: string): Promise<User | null> {
+    try {
+      return await this.userRepository.findOne({
+        where: {
+          username: username,
+        },
+      });
+    } catch (error) {
+      console.error('该用户名不存在:' + error.message);
+      throw new HttpException(Result.error('数据库错误'), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   /*
   创建
   */
-  async createOneUser(body:any): Promise<void>{
+  async createOneUser(body: any): Promise<void> {
+    // **先检查 UUID 是否已存在**
+    const existingUser = await this.userRepository.findOne({
+      where: { id: body.id },
+    });
+    if (existingUser) {
+      throw new HttpException(
+        Result.error('用户唯一 UUID 已存在', HttpStatus.CONFLICT.toString()),
+        HttpStatus.CONFLICT
+      );
+    }
 
-      // **先检查 UUID 是否已存在**
-      const existingUser = await this.userRepository.findOne({ where: { id: body.id } });
-      if (existingUser) {
-        throw new HttpException(Result.error('用户唯一 UUID 已存在', HttpStatus.CONFLICT.toString()), HttpStatus.CONFLICT);
-      }
-
-      try {
-        await this.userRepository.save(body)
-      } catch (error) {
-        console.error('创建用户失败:'+error.message);
-        // 根据错误类型返回不同的 HTTP 状态码
-        if (error.code === 'ER_DUP_ENTRY' || error.code === '1062') {
-          throw new HttpException(Result.error('用户名已存在',HttpStatus.CONFLICT.toString()), HttpStatus.CONFLICT);
-        }
+    try {
+      await this.userRepository.save(body);
+    } catch (error) {
+      console.error('创建用户失败:' + error.message);
+      // 根据错误类型返回不同的 HTTP 状态码
+      if (error.code === 'ER_DUP_ENTRY' || error.code === '1062') {
         throw new HttpException(
-          Result.error('数据库错误'),
-          HttpStatus.INTERNAL_SERVER_ERROR
+          Result.error('用户名已存在', HttpStatus.CONFLICT.toString()),
+          HttpStatus.CONFLICT
         );
       }
+      throw new HttpException(Result.error('数据库错误'), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   /*
   更新
   */
-  async update(body:any): Promise<void>{
-      // 确保 body 里有 id 或其他唯一标识符
-      if (!body.id) {
-        throw new HttpException(Result.error('缺少用户的ID',HttpStatus.BAD_REQUEST.toString()), HttpStatus.BAD_REQUEST);
-      }
-      // **先检查 UUID 是否已存在**
-      const existingUser = await this.userRepository.findOne({ where: { id: body.id } });
-      if (!existingUser) {
-        throw new HttpException(Result.error('用户不存在,更新失败', HttpStatus.CONFLICT.toString()), HttpStatus.CONFLICT);
-      }
+  async update(body: any): Promise<void> {
+    // 确保 body 里有 id 或其他唯一标识符
+    if (!body.id) {
+      throw new HttpException(
+        Result.error('缺少用户的ID', HttpStatus.BAD_REQUEST.toString()),
+        HttpStatus.BAD_REQUEST
+      );
+    }
+    // **先检查 UUID 是否已存在**
+    const existingUser = await this.userRepository.findOne({
+      where: { id: body.id },
+    });
+    if (!existingUser) {
+      throw new HttpException(
+        Result.error('用户不存在,更新失败', HttpStatus.CONFLICT.toString()),
+        HttpStatus.CONFLICT
+      );
+    }
 
-      // 判断密码是否有改变
-      if(body.password){
-          if(existingUser.password != hashSaltPassword(body.password)){
-            body.password = hashSaltPassword(body.password);
-          }
+    // 判断密码是否有改变
+    if (body.password) {
+      if (existingUser.password != hashSaltPassword(body.password)) {
+        body.password = hashSaltPassword(body.password);
       }
-      
+    }
 
-      try {
-        // 数据库进行更新操作
-        await this.userRepository.save(body);
-      } catch (error) {
-        console.error('更新用户失败:'+error.message);
-        if (error.code === 'ER_DUP_ENTRY' || error.code === '1062') {
-          throw new HttpException(Result.error('尝试更新账户名，但账户不能重复',HttpStatus.CONFLICT.toString()), HttpStatus.CONFLICT);
-        }
-        // 根据错误类型返回不同的 HTTP 状态码
+    try {
+      // 数据库进行更新操作
+      await this.userRepository.save(body);
+    } catch (error) {
+      console.error('更新用户失败:' + error.message);
+      if (error.code === 'ER_DUP_ENTRY' || error.code === '1062') {
         throw new HttpException(
-          Result.error('数据库错误'),
-          HttpStatus.INTERNAL_SERVER_ERROR
+          Result.error('尝试更新账户名，但账户不能重复', HttpStatus.CONFLICT.toString()),
+          HttpStatus.CONFLICT
         );
       }
+      // 根据错误类型返回不同的 HTTP 状态码
+      throw new HttpException(Result.error('数据库错误'), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
-
 
   /*
   删除
   */
-  async delete(id: string): Promise<User | null>{
-    
-      // 判断是否为空
-      
-      if (!id) {
-        throw new HttpException(Result.error('用户uuid不能为空',HttpStatus.BAD_REQUEST.toString()), HttpStatus.BAD_REQUEST);
-      }
+  async delete(id: string): Promise<User | null> {
+    // 判断是否为空
 
-      // 先找到用户
-      const existingUser = await this.userRepository.findOne({ where: { id: id } });
-      if(!existingUser){
-        throw new HttpException(Result.success({},'未找到用户',HttpStatus.NOT_FOUND.toString()), HttpStatus.NOT_FOUND);
-      }
+    if (!id) {
+      throw new HttpException(
+        Result.error('用户uuid不能为空', HttpStatus.BAD_REQUEST.toString()),
+        HttpStatus.BAD_REQUEST
+      );
+    }
 
-      // 数据库进行删除操作
-      const result =  await this.userRepository.delete({id});
-    
-      // 操作result
-      if (result.affected === 0) {
-        throw new HttpException(Result.error('删除失败',HttpStatus.NOT_FOUND.toString()), HttpStatus.CONFLICT);
-      }
-      
-      return existingUser;
+    // 先找到用户
+    const existingUser = await this.userRepository.findOne({
+      where: { id: id },
+    });
+    if (!existingUser) {
+      throw new HttpException(
+        Result.success({}, '未找到用户', HttpStatus.NOT_FOUND.toString()),
+        HttpStatus.NOT_FOUND
+      );
+    }
+
+    // 数据库进行删除操作
+    const result = await this.userRepository.delete({ id });
+
+    // 操作result
+    if (result.affected === 0) {
+      throw new HttpException(
+        Result.error('删除失败', HttpStatus.NOT_FOUND.toString()),
+        HttpStatus.CONFLICT
+      );
+    }
+
+    return existingUser;
   }
-
 }
-
-
