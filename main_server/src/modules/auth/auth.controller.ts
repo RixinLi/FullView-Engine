@@ -7,6 +7,8 @@ import {
   Post,
   UseGuards,
   Request,
+  Inject,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginInfo } from './dto/login-info.dto';
@@ -15,16 +17,22 @@ import { RegisterInfo } from './dto/register-info.dto';
 import { Public, Roles } from './common/auth.decorator';
 import { RolesGuard } from './roles.guard';
 import { Role } from './common/auth.constants';
+import { ClientProxy } from '@nestjs/microservices';
+import { Observable } from 'rxjs';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    @Inject('CALC_SERVICE') private calcClient: ClientProxy,
+    private readonly authService: AuthService
+  ) {}
 
   @Public()
   @HttpCode(HttpStatus.OK)
   @Get()
-  helloWorld() {
-    return Result.success('hello, world');
+  calc(@Query('num') str): Observable<number> {
+    const numArr = str.split(',').map((item) => parseInt(item));
+    return this.calcClient.send('sum', numArr);
   }
 
   @Public()

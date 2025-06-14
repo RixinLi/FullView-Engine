@@ -1,9 +1,11 @@
-import { Transport } from '@nestjs/microservices';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
-export const calc_microservice = {
-  name: 'CALC_SERVICE',
-  transport: Transport.TCP,
-  options: {
-    port: 8888,
+export const MicroserviceModule = ClientsModule.register([
+  {
+    name: 'CALC_SERVICE',
+    transport: Transport.TCP,
+    options: {
+      port: 8888,
+    },
   },
-};
+]);
