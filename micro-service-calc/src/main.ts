@@ -8,10 +8,11 @@ async function bootstrap() {
     {
       transport: Transport.TCP,
       options: {
-        port: 3334,
+        port: 30001,
       },
     },
   );
+  console.log('🚀 micro-service-cal running on port 30001');
   app.listen();
 }
 bootstrap();

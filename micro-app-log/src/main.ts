@@ -8,10 +8,11 @@ async function bootstrap() {
     {
       transport: Transport.TCP,
       options: {
-        port: 3335,
+        port: 30002,
       },
     },
   );
+  console.log('🚀 micro-app-log running on port 30002');
   app.listen();
 }
 bootstrap();

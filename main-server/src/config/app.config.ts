@@ -5,6 +5,6 @@ import * as dotenv from 'dotenv';
 */
 dotenv.config();
 export const appConfig = {
-  port: process.env.PORT || 3000,
+  port: 30000,
   env: process.env.NODE_ENV || 'development',
 };

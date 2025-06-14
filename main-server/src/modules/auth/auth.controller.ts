@@ -24,7 +24,7 @@ import { Observable } from 'rxjs';
 export class AuthController {
   constructor(
     @Inject('CALC_SERVICE') private calcClient: ClientProxy,
-    @Inject('LOG_SERVIVE') private logClient: ClientProxy,
+    @Inject('LOG_SERVICE') private logClient: ClientProxy,
     private readonly authService: AuthService
   ) {}
 
