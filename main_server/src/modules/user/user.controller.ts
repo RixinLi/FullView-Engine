@@ -18,7 +18,7 @@ import { QueryUserDto } from './dto/query-user.dto';
 import { Result } from 'src/common/result';
 import { ResponseUserDto } from './dto/response-user.dto';
 import { plainToClass } from 'class-transformer';
-import { CheckPolicies } from '../auth/common/auth.decorator';
+import { CheckPolicies, Roles } from '../auth/common/auth.decorator';
 import { PoliciesGuard } from '../auth/policies.guard';
 import { AppAbility } from '../auth/casl/casl-ability.factory';
 import { Action } from '../auth/common/auth.constants';
@@ -29,7 +29,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   /*
-  查询
+  查询所有
   */
   @Get('findAll')
   async findAll() {
@@ -38,6 +38,9 @@ export class UserController {
     return Result.success(allData);
   }
 
+  /*
+  查询单个
+  */
   @Get('findOne')
   async findOneUser(@Body() body: QueryUserDto) {
     const res = await this.userService.findOne(body);
@@ -84,6 +87,10 @@ export class UserController {
     }
     return true;
   })
+
+  /*
+  更新
+  */
   @Patch('update')
   async UpdateOneUser(@Body() body: UpdateUserDto) {
     await this.userService.update(body);
