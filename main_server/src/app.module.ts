@@ -4,7 +4,6 @@ import { DatabaseModule } from './modules/database/database.module';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CaslModule } from './modules/auth/casl/caslModule';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MicroserviceModule } from './microservices/microsever.config';
 
 @Module({

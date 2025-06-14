@@ -24,6 +24,7 @@ import { Observable } from 'rxjs';
 export class AuthController {
   constructor(
     @Inject('CALC_SERVICE') private calcClient: ClientProxy,
+    @Inject('LOG_SERVIVE') private logClient: ClientProxy,
     private readonly authService: AuthService
   ) {}
 
@@ -32,6 +33,7 @@ export class AuthController {
   @Get()
   calc(@Query('num') str): Observable<number> {
     const numArr = str.split(',').map((item) => parseInt(item));
+    this.logClient.emit('log', 'calc:' + numArr);
     return this.calcClient.send('sum', numArr);
   }
 

@@ -5,7 +5,14 @@ export const MicroserviceModule = ClientsModule.register([
     name: 'CALC_SERVICE',
     transport: Transport.TCP,
     options: {
-      port: 8888,
+      port: 3334,
+    },
+  },
+  {
+    name: 'LOG_SERVICE',
+    transport: Transport.TCP,
+    options: {
+      port: 3335,
     },
   },
 ]);
