@@ -22,6 +22,13 @@ export class AuthController {
 
   @Public()
   @HttpCode(HttpStatus.OK)
+  @Get()
+  helloWorld() {
+    return Result.success('hello, world');
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(@Body() body: LoginInfo) {
     // console.log(body);
