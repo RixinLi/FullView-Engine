@@ -9,8 +9,8 @@ module.exports = {
       script: "micro-app-log/dist/main.js",
     },
     {
-      name: "",
-      script: "dist/microservice-2/main.js",
+      name: "micro-service-calc",
+      script: "micro-service-calc/dist/main.js",
     },
   ],
 };
