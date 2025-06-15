@@ -12,7 +12,7 @@ export class AppController {
   }
 
   @MessagePattern('sum')
-  sum(numArr: Array<number>): number {
+  async sum(numArr: Array<number>): Promise<Number> {
     return numArr.reduce((total, item) => total + item, 0);
   }
 }

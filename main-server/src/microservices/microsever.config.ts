@@ -15,4 +15,11 @@ export const MicroserviceModule = ClientsModule.register([
       port: 30002,
     },
   },
+  {
+    name: 'REDIS_SERVICE',
+    transport: Transport.TCP,
+    options: {
+      port: 30003,
+    },
+  },
 ]);

@@ -9,6 +9,7 @@ import {
   Request,
   Inject,
   Query,
+  Param,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginInfo } from './dto/login-info.dto';
@@ -19,12 +20,14 @@ import { RolesGuard } from './roles.guard';
 import { Role } from './common/auth.constants';
 import { ClientProxy } from '@nestjs/microservices';
 import { Observable } from 'rxjs';
+import { RedisRequestDto, RedisResponseDto } from './dto/redis.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     @Inject('CALC_SERVICE') private calcClient: ClientProxy,
     @Inject('LOG_SERVICE') private logClient: ClientProxy,
+    @Inject('REDIS_SERVICE') private rediesClient: ClientProxy,
     private readonly authService: AuthService
   ) {}
 
@@ -35,6 +38,13 @@ export class AuthController {
     const numArr = str.split(',').map((item) => parseInt(item));
     this.logClient.emit('log', 'calc:' + numArr);
     return this.calcClient.send('sum', numArr);
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('redis')
+  redis(@Body() redisKeyValue: RedisRequestDto) {
+    return this.rediesClient.send('redis', redisKeyValue);
   }
 
   @Public()

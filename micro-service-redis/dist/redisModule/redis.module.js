@@ -6,18 +6,24 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppModule = void 0;
+exports.RedisCacheModule = void 0;
 const common_1 = require("@nestjs/common");
-const app_controller_1 = require("./app.controller");
-const app_service_1 = require("./app.service");
-let AppModule = class AppModule {
+const ioredis_1 = require("@nestjs-modules/ioredis");
+let RedisCacheModule = class RedisCacheModule {
 };
-exports.AppModule = AppModule;
-exports.AppModule = AppModule = __decorate([
+exports.RedisCacheModule = RedisCacheModule;
+exports.RedisCacheModule = RedisCacheModule = __decorate([
     (0, common_1.Module)({
-        imports: [],
-        controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService],
+        imports: [
+            ioredis_1.RedisModule.forRoot({
+                options: {
+                    host: 'localhost',
+                    port: 6379,
+                    db: 1,
+                },
+                type: 'single',
+            }),
+        ],
     })
-], AppModule);
-//# sourceMappingURL=app.module.js.map
+], RedisCacheModule);
+//# sourceMappingURL=redis.module.js.map
