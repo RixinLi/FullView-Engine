@@ -56,6 +56,7 @@ export class AuthController {
   async login(@Body() body: LoginInfo) {
     // console.log(body);
     const data = await this.authService.signIn(body.username, body.password);
+    this.logClient.emit('log', body.username + ' logged in!');
     return Result.success(data, '200', '登录成功');
   }
 
