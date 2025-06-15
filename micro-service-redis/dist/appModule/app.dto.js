@@ -10,20 +10,23 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RedisResponseDto = exports.RedisRequestDto = void 0;
+const class_validator_1 = require("class-validator");
 class RedisRequestDto {
-    data;
+    redis;
 }
 exports.RedisRequestDto = RedisRequestDto;
 __decorate([
-    Object(),
+    (0, class_validator_1.IsObject)(),
+    (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", Object)
-], RedisRequestDto.prototype, "data", void 0);
+], RedisRequestDto.prototype, "redis", void 0);
 class RedisResponseDto {
-    data;
+    redis;
 }
 exports.RedisResponseDto = RedisResponseDto;
 __decorate([
-    Object(),
+    (0, class_validator_1.IsObject)(),
+    (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", Object)
-], RedisResponseDto.prototype, "data", void 0);
+], RedisResponseDto.prototype, "redis", void 0);
 //# sourceMappingURL=app.dto.js.map

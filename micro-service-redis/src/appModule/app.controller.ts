@@ -15,18 +15,18 @@ export class AppController {
   // 使用messagePattern异步调用，然后再使用redis的异步处理
   @MessagePattern('redis')
   async redisKeyValue(requestDto: RedisRequestDto): Promise<RedisResponseDto> {
-    const { data } = requestDto;
+    const { redis } = requestDto;
 
     // 并行存入 Redis
     await Promise.all(
-      Object.entries(data).map(([key, value]) => this.redis.set(key, value)),
+      Object.entries(redis).map(([key, value]) => this.redis.set(key, value)),
     );
 
     // 从 Redis 获取所有值
     const resultEntries = await Promise.all(
-      Object.keys(data).map(async (key) => [key, await this.redis.get(key)]),
+      Object.keys(redis).map(async (key) => [key, await this.redis.get(key)]),
     );
 
-    return { data: Object.fromEntries(resultEntries) };
+    return { redis: Object.fromEntries(resultEntries) };
   }
 }

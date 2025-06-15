@@ -27,10 +27,10 @@ let AppController = class AppController {
         this.redis = redis;
     }
     async redisKeyValue(requestDto) {
-        const { data } = requestDto;
-        await Promise.all(Object.entries(data).map(([key, value]) => this.redis.set(key, value)));
-        const resultEntries = await Promise.all(Object.keys(data).map(async (key) => [key, await this.redis.get(key)]));
-        return { data: Object.fromEntries(resultEntries) };
+        const { redis } = requestDto;
+        await Promise.all(Object.entries(redis).map(([key, value]) => this.redis.set(key, value)));
+        const resultEntries = await Promise.all(Object.keys(redis).map(async (key) => [key, await this.redis.get(key)]));
+        return { redis: Object.fromEntries(resultEntries) };
     }
 };
 exports.AppController = AppController;
