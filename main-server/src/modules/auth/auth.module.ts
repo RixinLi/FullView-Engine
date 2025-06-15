@@ -7,9 +7,10 @@ import { jwtSetting } from './common/auth.constants';
 import { AuthGuard } from './auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { MicroserviceModule } from 'src/microservices/microsever.config';
+import { InterceptorModule } from 'src/utils/interceptor/interceptor.module';
 
 @Module({
-  imports: [UserModule, JwtModule.register(jwtSetting), MicroserviceModule],
+  imports: [UserModule, JwtModule.register(jwtSetting), MicroserviceModule, InterceptorModule],
   controllers: [AuthController],
   providers: [AuthService, { provide: APP_GUARD, useClass: AuthGuard }],
 })

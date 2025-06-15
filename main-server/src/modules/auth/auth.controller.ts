@@ -10,6 +10,7 @@ import {
   Inject,
   Query,
   Param,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginInfo } from './dto/login-info.dto';
@@ -21,6 +22,7 @@ import { Role } from './common/auth.constants';
 import { ClientProxy } from '@nestjs/microservices';
 import { Observable } from 'rxjs';
 import { RedisRequestDto, RedisResponseDto } from './dto/redis.dto';
+import { ApiRateLimiterInterceptor } from 'src/utils/interceptor/ApiRateLimitInterceptor.utils';
 
 @Controller('auth')
 export class AuthController {
@@ -48,6 +50,7 @@ export class AuthController {
   }
 
   @Public()
+  @UseInterceptors(ApiRateLimiterInterceptor) // 对相同ip的login获取access_token获取进行限制
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(@Body() body: LoginInfo) {
