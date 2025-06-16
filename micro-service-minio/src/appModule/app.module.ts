@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { RedisCacheModule } from 'src/redisModule/redis.module';
+import { MinioModule } from 'src/minioModule/minio.module';
 
 @Module({
-  imports: [],
+  imports: [RedisCacheModule, MinioModule],
   controllers: [AppController],
   providers: [AppService],
 })

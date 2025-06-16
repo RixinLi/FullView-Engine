@@ -30,4 +30,11 @@ export const MicroserviceModule = ClientsModule.register([
       port: 6379,
     },
   },
+  {
+    name: 'MINIO_SERVICE',
+    transport: Transport.TCP,
+    options: {
+      port: 30004,
+    },
+  },
 ]);
