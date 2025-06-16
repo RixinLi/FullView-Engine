@@ -20,6 +20,11 @@
       "label": "micro-service-redis",
       "type": "shell",
       "command": "cd micro-service-redis; yarn start"
+    },
+    {
+      "label": "micro-service-minio",
+      "type": "shell",
+      "command": "cd micro-service-minio; npm run start"
     }
   ]
 }
