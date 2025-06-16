@@ -3,5 +3,5 @@ export declare class AppController {
     private readonly appService;
     constructor(appService: AppService);
     getHello(): string;
-    sum(numArr: Array<number>): number;
+    sum(numArr: Array<number>): Promise<Number>;
 }

@@ -6,9 +6,11 @@ async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     AppModule,
     {
-      transport: Transport.TCP,
+      transport: Transport.REDIS,
       options: {
-        port: 30001,
+        host: 'localhost',
+        port: 6379,
+        wildcards: true, // 允许使用通配符订阅
       },
     },
   );

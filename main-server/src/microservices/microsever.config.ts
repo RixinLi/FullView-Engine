@@ -22,4 +22,12 @@ export const MicroserviceModule = ClientsModule.register([
       port: 30003,
     },
   },
+  {
+    name: 'MATH_SERVICE',
+    transport: Transport.REDIS,
+    options: {
+      host: 'localhost',
+      port: 6379,
+    },
+  },
 ]);

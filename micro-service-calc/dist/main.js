@@ -5,9 +5,10 @@ const microservices_1 = require("@nestjs/microservices");
 const app_module_1 = require("./app.module");
 async function bootstrap() {
     const app = await core_1.NestFactory.createMicroservice(app_module_1.AppModule, {
-        transport: microservices_1.Transport.TCP,
+        transport: microservices_1.Transport.REDIS,
         options: {
-            port: 30001,
+            host: 'localhost',
+            port: 6379,
         },
     });
     console.log('🚀 micro-service-cal running on port 30001');

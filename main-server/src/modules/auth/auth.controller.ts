@@ -27,7 +27,8 @@ import { ApiRateLimiterInterceptor } from 'src/utils/interceptor/ApiRateLimitInt
 @Controller('auth')
 export class AuthController {
   constructor(
-    @Inject('CALC_SERVICE') private calcClient: ClientProxy,
+    // @Inject('CALC_SERVICE') private calcClient: ClientProxy,  //原本的TCP方法
+    @Inject('MATH_SERVICE') private calcClient: ClientProxy, // REDIS的方法
     @Inject('LOG_SERVICE') private logClient: ClientProxy,
     @Inject('REDIS_SERVICE') private rediesClient: ClientProxy,
     private readonly authService: AuthService

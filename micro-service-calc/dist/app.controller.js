@@ -21,7 +21,7 @@ let AppController = class AppController {
     getHello() {
         return this.appService.getHello();
     }
-    sum(numArr) {
+    async sum(numArr) {
         return numArr.reduce((total, item) => total + item, 0);
     }
 };
@@ -36,7 +36,7 @@ __decorate([
     (0, microservices_1.MessagePattern)('sum'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Array]),
-    __metadata("design:returntype", Number)
+    __metadata("design:returntype", Promise)
 ], AppController.prototype, "sum", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),

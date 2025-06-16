@@ -29,4 +29,9 @@ export class AppController {
 
     return { redis: Object.fromEntries(resultEntries) };
   }
+
+  @MessagePattern('notifications.*')
+  handleNotification(message: string) {
+    console.log(`收到通知: ${message}`);
+  }
 }
