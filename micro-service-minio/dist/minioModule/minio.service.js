@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MinioService = void 0;
 const common_1 = require("@nestjs/common");
 const minio_1 = require("minio");
+const minio_config_1 = require("./minio.config");
 let MinioService = class MinioService {
     client;
     constructor() {
@@ -33,6 +34,9 @@ let MinioService = class MinioService {
             .catch((err) => {
             console.error('连接失败或获取 Buckets 出错：', err);
         });
+    }
+    async putFile(filename, buffer) {
+        return this.client.putObject(minio_config_1.minioConfig.bucketName, filename, buffer);
     }
 };
 exports.MinioService = MinioService;

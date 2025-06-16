@@ -7,6 +7,7 @@ import { CaslModule } from './modules/auth/casl/caslModule';
 import { MicroserviceModule } from './microservices/microsever.config';
 import { RedisCacheModule } from './utils/redis/redisCacheModule.module';
 import { InterceptorModule } from './utils/interceptor/interceptor.module';
+import { FileModule } from './modules/file/file.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { InterceptorModule } from './utils/interceptor/interceptor.module';
     CaslModule,
     RedisCacheModule,
     InterceptorModule,
+    FileModule,
   ],
 })
 export class AppModule {}

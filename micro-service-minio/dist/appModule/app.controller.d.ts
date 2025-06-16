@@ -8,4 +8,9 @@ export declare class AppController {
     private readonly redis;
     constructor(appService: AppService, minioService: MinioService, redis: Redis);
     redisKeyValue(requestDto: RedisRequestDto): Promise<RedisResponseDto>;
+    handleMinioPutFile(data: {
+        filename: string;
+        buffer: string;
+        mimetype: string;
+    }): Promise<void>;
 }

@@ -35,6 +35,11 @@ let AppController = class AppController {
         const resultEntries = await Promise.all(Object.keys(redis).map(async (key) => [key, await this.redis.get(key)]));
         return { redis: Object.fromEntries(resultEntries) };
     }
+    async handleMinioPutFile(data) {
+        const buffer = Buffer.from(data.buffer, 'base64');
+        await this.minioService.putFile(data.filename, buffer);
+        console.log(`✅ 文件 ${data.filename} 已上传至 MinIO`);
+    }
 };
 exports.AppController = AppController;
 __decorate([
@@ -43,6 +48,13 @@ __decorate([
     __metadata("design:paramtypes", [app_dto_1.RedisRequestDto]),
     __metadata("design:returntype", Promise)
 ], AppController.prototype, "redisKeyValue", null);
+__decorate([
+    (0, microservices_1.EventPattern)('minioPutFile'),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "handleMinioPutFile", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),
     __param(2, (0, ioredis_1.InjectRedis)()),
