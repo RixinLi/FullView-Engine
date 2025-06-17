@@ -27,6 +27,16 @@ let RedisService = class RedisService {
         const resultEntries = await Promise.all(Object.keys(redis).map(async (key) => [key, await this.redis.get(key)]));
         return { redis: Object.fromEntries(resultEntries) };
     }
+    async setBuffer(key, buffer) {
+        await this.redis.set(key, buffer);
+    }
+    async getBuffer(key) {
+        const result = await this.redis.getBuffer(key);
+        return result;
+    }
+    async del(key) {
+        await this.redis.del(key);
+    }
 };
 exports.RedisService = RedisService;
 exports.RedisService = RedisService = __decorate([

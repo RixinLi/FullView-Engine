@@ -14,35 +14,44 @@ const common_1 = require("@nestjs/common");
 const minio_service_1 = require("./minio.service");
 const microservices_1 = require("@nestjs/microservices");
 const minio_config_1 = require("./minio.config");
+const redis_service_1 = require("../redisModule/redis.service");
 const tempDir = '/tmp/uploads';
 const streamCache = new Map();
 let MinioController = class MinioController {
     minioService;
-    constructor(minioService) {
+    redisService;
+    constructor(minioService, redisService) {
         this.minioService = minioService;
+        this.redisService = redisService;
     }
     async handleMinioPutFile(data) {
         const { streamId, chunkIndex, totalChunks, chunk, filename, mimeType, isLast, } = data;
-        if (!streamCache.has(streamId)) {
-            streamCache.set(streamId, []);
-        }
-        streamCache.get(streamId)[chunkIndex] = Buffer.from(chunk);
-        console.log('收到' + streamId + '的chunk: ' + chunkIndex);
-        if (!mimeType) {
-            console.log('文件类型不存在');
-            return;
-        }
-        let objectName = filename;
-        if (mimeType.startsWith('image/')) {
-            objectName = 'imgs/' + objectName;
-        }
-        else if (data.mimeType.startsWith('video/')) {
-            objectName = 'videos/' + objectName;
-        }
+        const key = streamId + ':' + chunkIndex;
+        await this.redisService.setBuffer(key, Buffer.from(chunk));
+        console.log(`setting chunk ${key}`);
         if (isLast) {
-            const buffers = streamCache.get(streamId);
+            const buffers = [];
+            for (let i = 0; i < totalChunks; i++) {
+                const curKey = streamId + ':' + i;
+                const curChunk = await this.redisService.getBuffer(curKey);
+                if (!curChunk) {
+                    throw new common_1.InternalServerErrorException(`Missing chunk ${i}`);
+                }
+                buffers.push(curChunk);
+                await this.redisService.del(curKey);
+            }
             const fileBuffer = Buffer.concat(buffers);
-            streamCache.delete(streamId);
+            if (!mimeType) {
+                console.log('文件类型不存在');
+                return;
+            }
+            let objectName = filename;
+            if (mimeType.startsWith('image/')) {
+                objectName = 'imgs/' + objectName;
+            }
+            else if (data.mimeType.startsWith('video/')) {
+                objectName = 'videos/' + objectName;
+            }
             await this.minioService.putObject(minio_config_1.minioConfig.bucketName, objectName, fileBuffer, fileBuffer.length);
             console.log(`✅ 文件 ${objectName} 已上传至 MinIO`);
         }
@@ -57,6 +66,7 @@ __decorate([
 ], MinioController.prototype, "handleMinioPutFile", null);
 exports.MinioController = MinioController = __decorate([
     (0, common_1.Controller)(),
-    __metadata("design:paramtypes", [minio_service_1.MinioService])
+    __metadata("design:paramtypes", [minio_service_1.MinioService,
+        redis_service_1.RedisService])
 ], MinioController);
 //# sourceMappingURL=minio.controller.js.map

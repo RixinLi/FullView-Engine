@@ -10,11 +10,13 @@ exports.MinioModule = void 0;
 const common_1 = require("@nestjs/common");
 const minio_service_1 = require("./minio.service");
 const minio_controller_1 = require("./minio.controller");
+const redis_module_1 = require("../redisModule/redis.module");
 let MinioModule = class MinioModule {
 };
 exports.MinioModule = MinioModule;
 exports.MinioModule = MinioModule = __decorate([
     (0, common_1.Module)({
+        imports: [redis_module_1.RedisCacheModule],
         controllers: [minio_controller_1.MinioController],
         providers: [minio_service_1.MinioService],
         exports: [minio_service_1.MinioService],

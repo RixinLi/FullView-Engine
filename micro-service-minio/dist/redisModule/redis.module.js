@@ -28,6 +28,7 @@ exports.RedisCacheModule = RedisCacheModule = __decorate([
         ],
         controllers: [redis_controller_1.RedisController],
         providers: [redis_service_1.RedisService],
+        exports: [redis_service_1.RedisService],
     })
 ], RedisCacheModule);
 //# sourceMappingURL=redis.module.js.map

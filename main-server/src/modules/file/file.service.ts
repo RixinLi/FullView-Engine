@@ -15,7 +15,6 @@ export class FileService {
 
     for (let i = 0; i < totalChunks; i++) {
       const chunk = buffer.slice(i * chunkSize, (i + 1) * chunkSize);
-      console.log('正在发送' + streamId + '的chunk: ' + i);
       await this.minioClient.emit('minioPutFileChunk', {
         streamId,
         chunkIndex: i,
