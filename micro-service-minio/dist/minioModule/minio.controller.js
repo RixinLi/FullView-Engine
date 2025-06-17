@@ -8,39 +8,49 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MinioController = void 0;
 const common_1 = require("@nestjs/common");
 const minio_service_1 = require("./minio.service");
 const microservices_1 = require("@nestjs/microservices");
+const minio_config_1 = require("./minio.config");
+const tempDir = '/tmp/uploads';
+const streamCache = new Map();
 let MinioController = class MinioController {
     minioService;
     constructor(minioService) {
         this.minioService = minioService;
     }
     async handleMinioPutFile(data) {
-        if (!data.mimeType) {
+        const { streamId, chunkIndex, totalChunks, chunk, filename, mimeType, isLast, } = data;
+        if (!streamCache.has(streamId)) {
+            streamCache.set(streamId, []);
+        }
+        streamCache.get(streamId)[chunkIndex] = Buffer.from(chunk);
+        console.log('收到' + streamId + '的chunk: ' + chunkIndex);
+        if (!mimeType) {
             console.log('文件类型不存在');
             return;
         }
-        if (data.mimeType.startsWith('image/')) {
-            data.filename = 'imgs/' + data.filename;
+        let objectName = filename;
+        if (mimeType.startsWith('image/')) {
+            objectName = 'imgs/' + objectName;
         }
         else if (data.mimeType.startsWith('video/')) {
-            data.filename = 'videos/' + data.filename;
+            objectName = 'videos/' + objectName;
         }
-        const Based64buffer = Buffer.from(data.buffer, 'base64');
-        await this.minioService.putFile(data.filename, Based64buffer);
-        console.log(`✅ 文件 ${data.filename} 已上传至 MinIO`);
+        if (isLast) {
+            const buffers = streamCache.get(streamId);
+            const fileBuffer = Buffer.concat(buffers);
+            streamCache.delete(streamId);
+            await this.minioService.putObject(minio_config_1.minioConfig.bucketName, objectName, fileBuffer, fileBuffer.length);
+            console.log(`✅ 文件 ${objectName} 已上传至 MinIO`);
+        }
     }
 };
 exports.MinioController = MinioController;
 __decorate([
-    (0, microservices_1.EventPattern)('minioPutFile'),
-    __param(0, (0, microservices_1.Payload)()),
+    (0, microservices_1.EventPattern)('minioPutFileChunk'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)

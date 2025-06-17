@@ -32,6 +32,9 @@ let MinioService = class MinioService {
     async putFile(ObjectPath, buffer) {
         return this.client.putObject(minio_config_1.minioConfig.bucketName, ObjectPath, buffer);
     }
+    async putObject(bucketName, objectName, buffer, size) {
+        return this.client.putObject(bucketName, objectName, buffer, size);
+    }
 };
 exports.MinioService = MinioService;
 exports.MinioService = MinioService = __decorate([

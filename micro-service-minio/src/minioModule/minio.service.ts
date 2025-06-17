@@ -29,4 +29,14 @@ export class MinioService {
     return this.client.putObject(minioConfig.bucketName, ObjectPath, buffer);
     //{ etag: '4889457ca823d079a800e4a5f427b353', versionId: null }
   }
+
+  // 上传Object
+  async putObject(
+    bucketName: string,
+    objectName: string,
+    buffer: Buffer,
+    size: number,
+  ) {
+    return this.client.putObject(bucketName, objectName, buffer, size);
+  }
 }
