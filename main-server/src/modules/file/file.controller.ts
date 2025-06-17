@@ -26,7 +26,7 @@ export class FileController {
       buffer: file.buffer.toString('base64'),
       mimeType: file.mimetype,
     };
-    console.log(file.mimetype);
+    console.log(file.mimetype, file.size);
     await this.fileService.fileUpload(payload);
     return { message: '文件已发送至 MinIO 服务处理' };
   }
