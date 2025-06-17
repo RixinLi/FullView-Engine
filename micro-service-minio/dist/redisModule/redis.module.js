@@ -9,6 +9,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RedisCacheModule = void 0;
 const common_1 = require("@nestjs/common");
 const ioredis_1 = require("@nestjs-modules/ioredis");
+const redis_controller_1 = require("./redis.controller");
+const redis_service_1 = require("./redis.service");
 let RedisCacheModule = class RedisCacheModule {
 };
 exports.RedisCacheModule = RedisCacheModule;
@@ -24,6 +26,8 @@ exports.RedisCacheModule = RedisCacheModule = __decorate([
                 type: 'single',
             }),
         ],
+        controllers: [redis_controller_1.RedisController],
+        providers: [redis_service_1.RedisService],
     })
 ], RedisCacheModule);
 //# sourceMappingURL=redis.module.js.map

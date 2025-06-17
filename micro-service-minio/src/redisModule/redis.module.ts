@@ -1,6 +1,8 @@
 // redis.module.ts
 import { Module } from '@nestjs/common';
 import { RedisModule } from '@nestjs-modules/ioredis';
+import { RedisController } from './redis.controller';
+import { RedisService } from './redis.service';
 
 @Module({
   imports: [
@@ -13,5 +15,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
       type: 'single',
     }),
   ],
+  controllers: [RedisController],
+  providers: [RedisService],
 })
 export class RedisCacheModule {}

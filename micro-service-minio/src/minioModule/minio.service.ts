@@ -9,19 +9,13 @@ export class MinioService {
   private readonly client: Client;
 
   constructor() {
-    this.client = new Client({
-      endPoint: 'localhost',
-      port: 9000,
-      useSSL: false,
-      accessKey: 'minioadmin',
-      secretKey: 'minioadmin',
-    });
+    this.client = new Client(minioConfig.minioClientConfig);
     this.client
       .listBuckets()
       .then((buckets) => {
-        console.log('连接成功，当前 Buckets：');
+        console.log('连接成功，当前 Buckets:');
         buckets.forEach((bucket) => {
-          console.log(`- ${bucket.name}（创建时间：${bucket.creationDate}）`);
+          console.log(`- ${bucket.name}(创建时间：${bucket.creationDate})`);
         });
       })
       .catch((err) => {
@@ -30,9 +24,9 @@ export class MinioService {
   }
 
   //直接上传接收到的 buff
-  async putFile(filename: string, buffer: Buffer) {
+  async putFile(ObjectPath: string, buffer: Buffer) {
     //如果想两个端都存在文件，可以使用 fPutObject 逻辑更简单
-    return this.client.putObject(minioConfig.bucketName, filename, buffer);
+    return this.client.putObject(minioConfig.bucketName, ObjectPath, buffer);
     //{ etag: '4889457ca823d079a800e4a5f427b353', versionId: null }
   }
 }

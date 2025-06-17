@@ -1,1 +1,1 @@
-{"version":3,"file":"minio.config.js","sourceRoot":"","sources":["../../src/minioModule/minio.config.ts"],"names":[],"mappings":";;;AAAa,QAAA,WAAW,GAAG;IACzB,UAAU,EAAE,MAAM;CACnB,CAAC"}
+{"version":3,"file":"minio.config.js","sourceRoot":"","sources":["../../src/minioModule/minio.config.ts"],"names":[],"mappings":";;;AAAa,QAAA,WAAW,GAAG;IACzB,iBAAiB,EAAE;QACjB,QAAQ,EAAE,WAAW;QACrB,IAAI,EAAE,IAAI;QACV,MAAM,EAAE,KAAK;QACb,SAAS,EAAE,YAAY;QACvB,SAAS,EAAE,YAAY;KACxB;IACD,UAAU,EAAE,MAAM;IAClB,MAAM,EAAE;QACN,MAAM,EAAE,QAAQ;QAChB,IAAI,EAAE,MAAM;KACb;CACF,CAAC"}

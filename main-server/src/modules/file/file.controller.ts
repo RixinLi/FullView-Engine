@@ -15,7 +15,7 @@ export class FileController {
   constructor(private readonly fileService: FileService) {}
 
   @Public()
-  @Post('upload')
+  @Post('MinioUpload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
@@ -24,8 +24,9 @@ export class FileController {
     const payload = {
       filename: `${Date.now()}-${file.originalname}`,
       buffer: file.buffer.toString('base64'),
-      MimeType: file.mimetype,
+      mimeType: file.mimetype,
     };
+    console.log(file.mimetype);
     await this.fileService.fileUpload(payload);
     return { message: '文件已发送至 MinIO 服务处理' };
   }

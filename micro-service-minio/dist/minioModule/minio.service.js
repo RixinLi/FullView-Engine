@@ -16,27 +16,21 @@ const minio_config_1 = require("./minio.config");
 let MinioService = class MinioService {
     client;
     constructor() {
-        this.client = new minio_1.Client({
-            endPoint: 'localhost',
-            port: 9000,
-            useSSL: false,
-            accessKey: 'minioadmin',
-            secretKey: 'minioadmin',
-        });
+        this.client = new minio_1.Client(minio_config_1.minioConfig.minioClientConfig);
         this.client
             .listBuckets()
             .then((buckets) => {
-            console.log('连接成功，当前 Buckets：');
+            console.log('连接成功，当前 Buckets:');
             buckets.forEach((bucket) => {
-                console.log(`- ${bucket.name}（创建时间：${bucket.creationDate}）`);
+                console.log(`- ${bucket.name}(创建时间：${bucket.creationDate})`);
             });
         })
             .catch((err) => {
             console.error('连接失败或获取 Buckets 出错：', err);
         });
     }
-    async putFile(filename, buffer) {
-        return this.client.putObject(minio_config_1.minioConfig.bucketName, filename, buffer);
+    async putFile(ObjectPath, buffer) {
+        return this.client.putObject(minio_config_1.minioConfig.bucketName, ObjectPath, buffer);
     }
 };
 exports.MinioService = MinioService;

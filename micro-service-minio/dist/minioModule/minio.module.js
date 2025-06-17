@@ -9,11 +9,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MinioModule = void 0;
 const common_1 = require("@nestjs/common");
 const minio_service_1 = require("./minio.service");
+const minio_controller_1 = require("./minio.controller");
 let MinioModule = class MinioModule {
 };
 exports.MinioModule = MinioModule;
 exports.MinioModule = MinioModule = __decorate([
     (0, common_1.Module)({
+        controllers: [minio_controller_1.MinioController],
         providers: [minio_service_1.MinioService],
         exports: [minio_service_1.MinioService],
     })
