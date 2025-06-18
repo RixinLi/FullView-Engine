@@ -20,9 +20,52 @@ const streamCache = new Map();
 let MinioController = class MinioController {
     minioService;
     redisService;
+    loadedCachedFile = new Set();
     constructor(minioService, redisService) {
         this.minioService = minioService;
         this.redisService = redisService;
+    }
+    async handleGetMinioFiles() {
+        console.log('接收到获取所有文件名称请求');
+        return await this.minioService.findAllObjects();
+    }
+    async handleGetMinioFileInfo(objectName) {
+        console.log(`接收到获取${objectName}文件信息请求`);
+        return await this.minioService.getObjectInfo(objectName);
+    }
+    async handleDownload(data) {
+        const { streamId, chunkIndex, chunkSize, totalChunks, filename, isLast } = data;
+        const objectLists = await this.minioService.findAllObjects();
+        if (!objectLists.includes(filename)) {
+            throw new common_1.InternalServerErrorException(`Object ${filename} not found`);
+        }
+        console.log('正在分片下载文件');
+        if (!this.loadedCachedFile.has(streamId)) {
+            this.loadedCachedFile.add(streamId);
+            await this.downloadCacheOnRedis(streamId, filename, totalChunks, chunkSize);
+            console.log('文件已经先打入redis缓存');
+        }
+        const chunk = await this.redisService.getBuffer(streamId + ':' + chunkIndex);
+        if (isLast) {
+            this.removeCacheOnRedis(streamId, totalChunks);
+            this.loadedCachedFile.delete(streamId);
+        }
+        return chunk;
+    }
+    async removeCacheOnRedis(key, totalChunks) {
+        for (let i = 0; i < totalChunks; i++) {
+            await this.redisService.del(key + ':' + i);
+        }
+    }
+    async downloadCacheOnRedis(key, filename, chunkSize, totalChunks) {
+        const buffer = await this.minioService.getObjectAsBuffer(filename);
+        if (buffer.length != chunkSize * totalChunks) {
+            throw new common_1.InternalServerErrorException(`缓存到redis上的文件大小与minio中文件的大小不匹配`);
+        }
+        for (let i = 0; i < totalChunks; i++) {
+            const chunk = buffer.slice(i * chunkSize, (i + 1) * chunkSize);
+            await this.redisService.setBuffer(key + ':' + i, chunk);
+        }
     }
     async handleMinioPutFile(data) {
         const { streamId, chunkIndex, totalChunks, chunk, filename, mimeType, isLast, } = data;
@@ -45,6 +88,7 @@ let MinioController = class MinioController {
                 console.log('文件类型不存在');
                 return;
             }
+            console.log(filename);
             let objectName = filename;
             if (mimeType.startsWith('image/')) {
                 objectName = 'imgs/' + objectName;
@@ -58,6 +102,24 @@ let MinioController = class MinioController {
     }
 };
 exports.MinioController = MinioController;
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'GetMinioFiles' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], MinioController.prototype, "handleGetMinioFiles", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'GetMinioFileInfo' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], MinioController.prototype, "handleGetMinioFileInfo", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'download' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], MinioController.prototype, "handleDownload", null);
 __decorate([
     (0, microservices_1.EventPattern)('minioPutFileChunk'),
     __metadata("design:type", Function),

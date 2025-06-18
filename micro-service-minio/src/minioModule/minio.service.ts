@@ -23,11 +23,24 @@ export class MinioService {
       });
   }
 
-  //直接上传接收到的 buff
-  async putFile(ObjectPath: string, buffer: Buffer) {
-    //如果想两个端都存在文件，可以使用 fPutObject 逻辑更简单
-    return this.client.putObject(minioConfig.bucketName, ObjectPath, buffer);
-    //{ etag: '4889457ca823d079a800e4a5f427b353', versionId: null }
+  // 获取所有Objects信息
+  async findAllObjects() {
+    console.log('显示所有可下载文件');
+
+    const stream = await this.client.listObjects(
+      minioConfig.bucketName,
+      '',
+      true,
+    );
+
+    const files: string[] = [];
+
+    for await (const obj of stream) {
+      files.push(obj.name); // 你可以根据 obj.name 或其他字段来收集
+    }
+
+    console.log(files);
+    return files;
   }
 
   // 上传Object
@@ -38,5 +51,40 @@ export class MinioService {
     size: number,
   ) {
     return this.client.putObject(bucketName, objectName, buffer, size);
+  }
+
+  // 获取Object的Info
+  async getObjectInfo(objectName: string) {
+    try {
+      const stat = await this.client.statObject(
+        minioConfig.bucketName,
+        objectName,
+      );
+      return {
+        name: objectName,
+        size: stat.size,
+        contentType: stat.metaData['content-type'],
+        lastModified: stat.lastModified,
+        etag: stat.etag,
+      };
+    } catch (err) {
+      console.error('获取对象信息失败 文件不存在');
+    }
+  }
+
+  // 获取Object的buffer
+  async getObjectAsBuffer(objectName: string): Promise<Buffer> {
+    const stream = await this.client.getObject(
+      minioConfig.bucketName,
+      objectName,
+    );
+    const chunks: Buffer[] = [];
+
+    for await (const chunk of stream) {
+      chunks.push(chunk);
+    }
+
+    console.log('已使用流式下载文件成功');
+    return Buffer.concat(chunks);
   }
 }

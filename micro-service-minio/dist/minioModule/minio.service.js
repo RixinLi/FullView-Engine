@@ -29,11 +29,42 @@ let MinioService = class MinioService {
             console.error('连接失败或获取 Buckets 出错：', err);
         });
     }
-    async putFile(ObjectPath, buffer) {
-        return this.client.putObject(minio_config_1.minioConfig.bucketName, ObjectPath, buffer);
+    async findAllObjects() {
+        console.log('显示所有可下载文件');
+        const stream = await this.client.listObjects(minio_config_1.minioConfig.bucketName, '', true);
+        const files = [];
+        for await (const obj of stream) {
+            files.push(obj.name);
+        }
+        console.log(files);
+        return files;
     }
     async putObject(bucketName, objectName, buffer, size) {
         return this.client.putObject(bucketName, objectName, buffer, size);
+    }
+    async getObjectInfo(objectName) {
+        try {
+            const stat = await this.client.statObject(minio_config_1.minioConfig.bucketName, objectName);
+            return {
+                name: objectName,
+                size: stat.size,
+                contentType: stat.metaData['content-type'],
+                lastModified: stat.lastModified,
+                etag: stat.etag,
+            };
+        }
+        catch (err) {
+            console.error('获取对象信息失败 文件不存在');
+        }
+    }
+    async getObjectAsBuffer(objectName) {
+        const stream = await this.client.getObject(minio_config_1.minioConfig.bucketName, objectName);
+        const chunks = [];
+        for await (const chunk of stream) {
+            chunks.push(chunk);
+        }
+        console.log('已使用流式下载文件成功');
+        return Buffer.concat(chunks);
     }
 };
 exports.MinioService = MinioService;

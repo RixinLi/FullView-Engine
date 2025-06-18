@@ -5,17 +5,102 @@ import * as fs from 'fs';
 import { minioConfig } from './minio.config';
 import { sign } from 'crypto';
 import { RedisService } from 'src/redisModule/redis.service';
-import { RedisKey } from 'ioredis';
+import Redis, { RedisKey } from 'ioredis';
 
 const tempDir = '/tmp/uploads';
 const streamCache = new Map();
 
 @Controller()
 export class MinioController {
+  private loadedCachedFile: Set<string> = new Set<string>();
   constructor(
     private readonly minioService: MinioService,
     private readonly redisService: RedisService,
   ) {}
+
+  // 获取所有文件名称
+  @MessagePattern({ cmd: 'GetMinioFiles' })
+  async handleGetMinioFiles() {
+    console.log('接收到获取所有文件名称请求');
+    return await this.minioService.findAllObjects();
+  }
+
+  // 获取文件信息
+  @MessagePattern({ cmd: 'GetMinioFileInfo' })
+  async handleGetMinioFileInfo(objectName: string) {
+    console.log(`接收到获取${objectName}文件信息请求`);
+    return await this.minioService.getObjectInfo(objectName);
+  }
+
+  // 使用分片下载文件
+  @MessagePattern({ cmd: 'download' })
+  async handleDownload(data) {
+    const { streamId, chunkIndex, chunkSize, totalChunks, filename, isLast } =
+      data;
+
+    const objectLists = await this.minioService.findAllObjects();
+    if (!objectLists.includes(filename)) {
+      // 文件不存在时的处理逻辑
+      throw new InternalServerErrorException(`Object ${filename} not found`);
+    }
+    console.log('正在分片下载文件');
+    // 先判断是否已经缓存,否则先打如redis缓存
+    if (!this.loadedCachedFile.has(streamId)) {
+      this.loadedCachedFile.add(streamId);
+      await this.downloadCacheOnRedis(
+        streamId,
+        filename,
+        totalChunks,
+        chunkSize,
+      );
+      console.log('文件已经先打入redis缓存');
+    }
+
+    // 从redis中拿到对应的chunk buffer
+    const chunk = await this.redisService.getBuffer(
+      streamId + ':' + chunkIndex,
+    );
+    // 如果是最后一个chunk了，把缓存清了
+    if (isLast) {
+      // 清redis的缓存
+      this.removeCacheOnRedis(streamId, totalChunks);
+      // 请set的streamId
+      this.loadedCachedFile.delete(streamId);
+    }
+
+    // 返回请求到的chunk
+    return chunk;
+  }
+
+  //清理所有缓存
+  async removeCacheOnRedis(key: RedisKey, totalChunks: number) {
+    // 分片打入redis
+    for (let i = 0; i < totalChunks; i++) {
+      await this.redisService.del(key + ':' + i);
+    }
+  }
+
+  // 先将文件缓存到redis上
+  async downloadCacheOnRedis(
+    key: RedisKey,
+    filename: string,
+    chunkSize: number,
+    totalChunks: number,
+  ) {
+    const buffer = await this.minioService.getObjectAsBuffer(filename);
+    // 稍微校验一下大小
+    if (buffer.length != chunkSize * totalChunks) {
+      throw new InternalServerErrorException(
+        `缓存到redis上的文件大小与minio中文件的大小不匹配`,
+      );
+    }
+
+    // 分片打入redis
+    for (let i = 0; i < totalChunks; i++) {
+      const chunk = buffer.slice(i * chunkSize, (i + 1) * chunkSize);
+      await this.redisService.setBuffer(key + ':' + i, chunk);
+    }
+  }
 
   @EventPattern('minioPutFileChunk')
   async handleMinioPutFile(data) {
@@ -63,6 +148,7 @@ export class MinioController {
         console.log('文件类型不存在');
         return;
       }
+      console.log(filename);
       let objectName = filename;
       if (mimeType.startsWith('image/')) {
         objectName = 'imgs/' + objectName;
