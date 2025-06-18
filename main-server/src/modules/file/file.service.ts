@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom, Observable } from 'rxjs';
-import { Result } from 'src/common/result';
+import { loadedFileDo } from './do/loadedFile.do';
 
 @Injectable()
 export class FileService {
@@ -40,13 +40,45 @@ export class FileService {
   }
 
   // 文件分片下载
-  async fileDownload(filename: string) {
+  async fileDownload(filename: string): Promise<loadedFileDo> {
     const fileInfo = await firstValueFrom(
       this.minioClient.send({ cmd: 'GetMinioFileInfo' }, filename)
     );
     console.log(fileInfo);
     const { name, size, contentType } = fileInfo;
 
-    // 根据文件大小开始分片得到chunk 发起新的EventMessage
+    // 定义块大小 2MB
+    const chunkSize = 1024 * 1024 * 2; // 2MB
+    const totalChunks = Math.ceil(size / chunkSize);
+    // console.log(size, chunkSize, totalChunks);
+    const streamId = `${filename}-${Date.now()}`;
+
+    // 开始接收chunks Buffer
+    const chunks: Buffer[] = [];
+    for (let i = 0; i < totalChunks; i++) {
+      // 根据文件大小开始分片得到chunk 发起新的EventMessage
+      const chunk = await firstValueFrom(
+        this.minioClient.send(
+          { cmd: 'download' },
+          {
+            streamId: streamId,
+            chunkIndex: i,
+            chunkSize: chunkSize,
+            totalChunks: totalChunks,
+            filename: filename,
+            isLast: i === totalChunks - 1,
+          }
+        )
+      );
+      chunks.push(Buffer.from(chunk));
+      console.log('已接收到' + streamId + ':' + i);
+    }
+    console.log('接收完毕');
+    const resdo: loadedFileDo = {
+      contentType: contentType,
+      name: name,
+      buffer: Buffer.concat(chunks),
+    };
+    return resdo;
   }
 }

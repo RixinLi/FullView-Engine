@@ -4,15 +4,15 @@ import {
   Get,
   HttpException,
   HttpStatus,
-  Param,
   Post,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileService } from './file.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Public } from '../auth/common/auth.decorator';
-import { downloadResquestDto } from './file.dto.ts/download.dto';
+import { downloadResquestDto } from './dto/downloadRequest.dto';
 
 @Controller('file')
 export class FileController {
@@ -41,16 +41,27 @@ export class FileController {
 
   @Public()
   @Get('MinioDownload')
-  async downloadFile(@Body() body: downloadResquestDto) {
+  async downloadFile(@Body() body: downloadResquestDto, @Res() res) {
     const { filename } = body;
     console.log('正在下载文件: ' + filename);
     if (!filename) {
       throw new HttpException('请输入正确文件名', HttpStatus.BAD_REQUEST);
     }
     try {
-      await this.fileService.fileDownload(filename);
+      const loadedFile = await this.fileService.fileDownload(filename);
+      // 设置响应头，触发文件下载
+      res.set({
+        'Content-Type': loadedFile.contentType,
+        'Content-Disposition': `attachment; filename="${encodeURIComponent(loadedFile.name)}"`,
+        'Content-Length': loadedFile.buffer.length,
+      });
+
+      await res.end(loadedFile.buffer); // ⬅️ 把 Buffer 写入 HTTP 响应
     } catch (e) {
-      console.log('下载失败');
+      console.log('下载失败' + e.message);
+      throw new HttpException('下载失败', HttpStatus.BAD_REQUEST);
+    } finally {
+      console.log('下载成功');
     }
   }
 

@@ -39,16 +39,16 @@ let MinioController = class MinioController {
         if (!objectLists.includes(filename)) {
             throw new common_1.InternalServerErrorException(`Object ${filename} not found`);
         }
-        console.log('正在分片下载文件');
         if (!this.loadedCachedFile.has(streamId)) {
+            console.log('正在分片下载文件');
             this.loadedCachedFile.add(streamId);
-            await this.downloadCacheOnRedis(streamId, filename, totalChunks, chunkSize);
+            await this.downloadCacheOnRedis(streamId, filename, chunkSize, totalChunks);
             console.log('文件已经先打入redis缓存');
         }
         const chunk = await this.redisService.getBuffer(streamId + ':' + chunkIndex);
         if (isLast) {
-            this.removeCacheOnRedis(streamId, totalChunks);
-            this.loadedCachedFile.delete(streamId);
+            await this.removeCacheOnRedis(streamId, totalChunks);
+            await this.loadedCachedFile.delete(streamId);
         }
         return chunk;
     }
@@ -58,20 +58,25 @@ let MinioController = class MinioController {
         }
     }
     async downloadCacheOnRedis(key, filename, chunkSize, totalChunks) {
-        const buffer = await this.minioService.getObjectAsBuffer(filename);
-        if (buffer.length != chunkSize * totalChunks) {
-            throw new common_1.InternalServerErrorException(`缓存到redis上的文件大小与minio中文件的大小不匹配`);
-        }
+        const buffer = Buffer.from(await this.minioService.getObjectAsBuffer(filename));
         for (let i = 0; i < totalChunks; i++) {
             const chunk = buffer.slice(i * chunkSize, (i + 1) * chunkSize);
-            await this.redisService.setBuffer(key + ':' + i, chunk);
+            try {
+                await this.redisService.setBuffer(key + ':' + i, chunk);
+            }
+            catch (e) {
+                console.log('缓存失败');
+            }
+            finally {
+                console.log(`缓存${key + ':' + i}成功`);
+            }
         }
     }
     async handleMinioPutFile(data) {
         const { streamId, chunkIndex, totalChunks, chunk, filename, mimeType, isLast, } = data;
         const key = streamId + ':' + chunkIndex;
         await this.redisService.setBuffer(key, Buffer.from(chunk));
-        console.log(`setting chunk ${key}`);
+        console.log(`上传缓存块chunk: ${key}`);
         if (isLast) {
             const buffers = [];
             for (let i = 0; i < totalChunks; i++) {
@@ -96,7 +101,7 @@ let MinioController = class MinioController {
             else if (data.mimeType.startsWith('video/')) {
                 objectName = 'videos/' + objectName;
             }
-            await this.minioService.putObject(minio_config_1.minioConfig.bucketName, objectName, fileBuffer, fileBuffer.length);
+            await this.minioService.putObject(minio_config_1.minioConfig.bucketName, objectName, fileBuffer, fileBuffer.length, mimeType);
             console.log(`✅ 文件 ${objectName} 已上传至 MinIO`);
         }
     }

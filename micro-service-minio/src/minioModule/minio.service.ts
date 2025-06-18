@@ -25,21 +25,15 @@ export class MinioService {
 
   // 获取所有Objects信息
   async findAllObjects() {
-    console.log('显示所有可下载文件');
-
     const stream = await this.client.listObjects(
       minioConfig.bucketName,
       '',
       true,
     );
-
     const files: string[] = [];
-
     for await (const obj of stream) {
       files.push(obj.name); // 你可以根据 obj.name 或其他字段来收集
     }
-
-    console.log(files);
     return files;
   }
 
@@ -49,8 +43,12 @@ export class MinioService {
     objectName: string,
     buffer: Buffer,
     size: number,
+    contentType: string,
   ) {
-    return this.client.putObject(bucketName, objectName, buffer, size);
+    // 必须还要包含content-Type提供给前端
+    return this.client.putObject(bucketName, objectName, buffer, size, {
+      'Content-Type': contentType,
+    });
   }
 
   // 获取Object的Info
@@ -84,7 +82,7 @@ export class MinioService {
       chunks.push(chunk);
     }
 
-    console.log('已使用流式下载文件成功');
+    console.log('已成功从MINIO获取文件');
     return Buffer.concat(chunks);
   }
 }

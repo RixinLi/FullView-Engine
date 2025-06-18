@@ -43,15 +43,15 @@ export class MinioController {
       // 文件不存在时的处理逻辑
       throw new InternalServerErrorException(`Object ${filename} not found`);
     }
-    console.log('正在分片下载文件');
     // 先判断是否已经缓存,否则先打如redis缓存
     if (!this.loadedCachedFile.has(streamId)) {
+      console.log('正在分片下载文件');
       this.loadedCachedFile.add(streamId);
       await this.downloadCacheOnRedis(
         streamId,
         filename,
-        totalChunks,
         chunkSize,
+        totalChunks,
       );
       console.log('文件已经先打入redis缓存');
     }
@@ -63,9 +63,9 @@ export class MinioController {
     // 如果是最后一个chunk了，把缓存清了
     if (isLast) {
       // 清redis的缓存
-      this.removeCacheOnRedis(streamId, totalChunks);
+      await this.removeCacheOnRedis(streamId, totalChunks);
       // 请set的streamId
-      this.loadedCachedFile.delete(streamId);
+      await this.loadedCachedFile.delete(streamId);
     }
 
     // 返回请求到的chunk
@@ -77,6 +77,7 @@ export class MinioController {
     // 分片打入redis
     for (let i = 0; i < totalChunks; i++) {
       await this.redisService.del(key + ':' + i);
+      // console.log('正在删除' + key + ':' + i);
     }
   }
 
@@ -87,18 +88,20 @@ export class MinioController {
     chunkSize: number,
     totalChunks: number,
   ) {
-    const buffer = await this.minioService.getObjectAsBuffer(filename);
-    // 稍微校验一下大小
-    if (buffer.length != chunkSize * totalChunks) {
-      throw new InternalServerErrorException(
-        `缓存到redis上的文件大小与minio中文件的大小不匹配`,
-      );
-    }
+    const buffer: Buffer = Buffer.from(
+      await this.minioService.getObjectAsBuffer(filename),
+    );
 
     // 分片打入redis
     for (let i = 0; i < totalChunks; i++) {
       const chunk = buffer.slice(i * chunkSize, (i + 1) * chunkSize);
-      await this.redisService.setBuffer(key + ':' + i, chunk);
+      try {
+        await this.redisService.setBuffer(key + ':' + i, chunk);
+      } catch (e) {
+        console.log('缓存失败');
+      } finally {
+        console.log(`缓存${key + ':' + i}成功`);
+      }
     }
   }
 
@@ -126,7 +129,7 @@ export class MinioController {
     // 使用redis缓存来保存片段
     const key: RedisKey = streamId + ':' + chunkIndex;
     await this.redisService.setBuffer(key, Buffer.from(chunk));
-    console.log(`setting chunk ${key}`);
+    console.log(`上传缓存块chunk: ${key}`);
 
     // 完成接收后上传到Minio，判断是否是最后的chunk块
     if (isLast) {
@@ -161,6 +164,7 @@ export class MinioController {
         objectName,
         fileBuffer,
         fileBuffer.length,
+        mimeType,
       );
       console.log(`✅ 文件 ${objectName} 已上传至 MinIO`);
     }

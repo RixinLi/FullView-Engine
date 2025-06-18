@@ -30,17 +30,17 @@ let MinioService = class MinioService {
         });
     }
     async findAllObjects() {
-        console.log('显示所有可下载文件');
         const stream = await this.client.listObjects(minio_config_1.minioConfig.bucketName, '', true);
         const files = [];
         for await (const obj of stream) {
             files.push(obj.name);
         }
-        console.log(files);
         return files;
     }
-    async putObject(bucketName, objectName, buffer, size) {
-        return this.client.putObject(bucketName, objectName, buffer, size);
+    async putObject(bucketName, objectName, buffer, size, contentType) {
+        return this.client.putObject(bucketName, objectName, buffer, size, {
+            'Content-Type': contentType,
+        });
     }
     async getObjectInfo(objectName) {
         try {
@@ -63,7 +63,7 @@ let MinioService = class MinioService {
         for await (const chunk of stream) {
             chunks.push(chunk);
         }
-        console.log('已使用流式下载文件成功');
+        console.log('已成功从MINIO获取文件');
         return Buffer.concat(chunks);
     }
 };
