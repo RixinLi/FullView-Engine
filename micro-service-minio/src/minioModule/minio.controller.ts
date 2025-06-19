@@ -6,6 +6,10 @@ import { minioConfig } from './minio.config';
 import { sign } from 'crypto';
 import { RedisService } from 'src/redisModule/redis.service';
 import Redis, { RedisKey } from 'ioredis';
+import e from 'express';
+import { resolve } from 'path';
+import { rejects } from 'assert';
+import { error } from 'console';
 
 const tempDir = '/tmp/uploads';
 const streamCache = new Map();
@@ -32,7 +36,34 @@ export class MinioController {
     return await this.minioService.getObjectInfo(objectName);
   }
 
-  // 使用分片下载文件
+  // 获取文件的片段传输
+  @MessagePattern({ cmd: 'rangeDownload' })
+  async handleRangeDownload(data) {
+    const { filename, start, end } = data;
+    try {
+      const stream = await this.minioService.getRangeObjectStream(
+        filename,
+        start,
+        end,
+      );
+      // 将stream换为buffer
+      const buffer = await this.streamToBuffer(stream);
+      return Buffer.from(buffer);
+    } catch (e) {
+      throw new InternalServerErrorException(`下载范围失败: ${e.message}`);
+    }
+  }
+
+  private streamToBuffer(stream): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      const chunks: Uint8Array[] = [];
+      stream.on('data', (chunk) => chunks.push(chunk));
+      stream.on('end', () => resolve(Buffer.concat(chunks)));
+      stream.on('error', reject);
+    });
+  }
+
+  // 下载处理：使用分片下载文件
   @MessagePattern({ cmd: 'download' })
   async handleDownload(data) {
     const { streamId, chunkIndex, chunkSize, totalChunks, filename, isLast } =

@@ -14,6 +14,8 @@ export declare class MinioController {
         lastModified: Date;
         etag: string;
     } | undefined>;
+    handleRangeDownload(data: any): Promise<Buffer<ArrayBuffer>>;
+    private streamToBuffer;
     handleDownload(data: any): Promise<Buffer<ArrayBufferLike> | null>;
     removeCacheOnRedis(key: RedisKey, totalChunks: number): Promise<void>;
     downloadCacheOnRedis(key: RedisKey, filename: string, chunkSize: number, totalChunks: number): Promise<void>;

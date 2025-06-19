@@ -5,6 +5,8 @@ import {
   HttpException,
   HttpStatus,
   Post,
+  Query,
+  Req,
   Res,
   UploadedFile,
   UseInterceptors,
@@ -40,28 +42,70 @@ export class FileController {
   }
 
   @Public()
+  @Get('MinioDownloadByQuery')
+  async downloadFileByQuery(@Query('filename') filename, @Res() res, @Req() req) {
+    return await this.downloadFile({ filename: filename }, res, req);
+  }
+
+  @Public()
   @Get('MinioDownload')
-  async downloadFile(@Body() body: downloadResquestDto, @Res() res) {
+  async downloadFile(@Body() body: downloadResquestDto, @Res() res, @Req() req) {
     const { filename } = body;
     console.log('正在下载文件: ' + filename);
     if (!filename) {
       throw new HttpException('请输入正确文件名', HttpStatus.BAD_REQUEST);
     }
-    try {
-      const loadedFile = await this.fileService.fileDownload(filename);
-      // 设置响应头，触发文件下载
-      res.set({
-        'Content-Type': loadedFile.contentType,
-        'Content-Disposition': `attachment; filename="${encodeURIComponent(loadedFile.name)}"`,
-        'Content-Length': loadedFile.buffer.length,
-      });
 
-      await res.end(loadedFile.buffer); // ⬅️ 把 Buffer 写入 HTTP 响应
-    } catch (e) {
-      console.log('下载失败' + e.message);
-      throw new HttpException('下载失败', HttpStatus.BAD_REQUEST);
-    } finally {
-      console.log('下载成功');
+    // 获取文件信息 中文件大小的信息 以便进行range下载合理性
+    let fileInfo = await this.fileService.getFileInfo(filename);
+    const totalSize = fileInfo.size;
+
+    // 判断是否存在range头
+    const rangeHeader: string = req.headers.range;
+
+    // 如果存在解析
+    if (rangeHeader) {
+      // 解析Range, 格式：“bytes=start-end”
+      const parts = rangeHeader.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : totalSize - 1; //如果未指定结束位置返回结束位置
+      if (start >= totalSize || end >= totalSize) {
+        res.set('Content-Range', `bytes*/${totalSize}`);
+        return res.status(406).send('请求不符合要求');
+      }
+
+      // 准备定义chunk的大小 发起请求
+      const chunkSize = end - start + 1;
+      // 改成调用支持fileDownloadRange的微服务接口
+      const fileChunk: Buffer = await this.fileService.fileRangeDownload(filename, start, end);
+      // console.log(fileChunk);
+
+      // 设置http信息
+      res.status(206);
+      res.set({
+        'Content-Range': `bytes ${start}-${end}/${totalSize}`,
+        'Content-Length': chunkSize,
+        'Content-Type': fileInfo.contentType,
+        'Accept-Ranges': 'bytes',
+      });
+      return res.end(fileChunk);
+    } else {
+      try {
+        const loadedFile = await this.fileService.fileDownload(filename);
+        // 设置响应头，触发文件下载
+        res.set({
+          'Content-Type': loadedFile.contentType,
+          'Content-Disposition': `attachment; filename="${encodeURIComponent(loadedFile.name)}"`,
+          'Content-Length': loadedFile.buffer.length,
+        });
+
+        await res.end(loadedFile.buffer); // ⬅️ 把 Buffer 写入 HTTP 响应
+      } catch (e) {
+        console.log('下载失败' + e.message);
+        throw new HttpException('下载失败', HttpStatus.BAD_REQUEST);
+      } finally {
+        console.log('下载成功');
+      }
     }
   }
 

@@ -33,6 +33,25 @@ let MinioController = class MinioController {
         console.log(`接收到获取${objectName}文件信息请求`);
         return await this.minioService.getObjectInfo(objectName);
     }
+    async handleRangeDownload(data) {
+        const { filename, start, end } = data;
+        try {
+            const stream = await this.minioService.getRangeObjectStream(filename, start, end);
+            const buffer = await this.streamToBuffer(stream);
+            return Buffer.from(buffer);
+        }
+        catch (e) {
+            throw new common_1.InternalServerErrorException(`下载范围失败: ${e.message}`);
+        }
+    }
+    streamToBuffer(stream) {
+        return new Promise((resolve, reject) => {
+            const chunks = [];
+            stream.on('data', (chunk) => chunks.push(chunk));
+            stream.on('end', () => resolve(Buffer.concat(chunks)));
+            stream.on('error', reject);
+        });
+    }
     async handleDownload(data) {
         const { streamId, chunkIndex, chunkSize, totalChunks, filename, isLast } = data;
         const objectLists = await this.minioService.findAllObjects();
@@ -119,6 +138,12 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], MinioController.prototype, "handleGetMinioFileInfo", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: 'rangeDownload' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], MinioController.prototype, "handleRangeDownload", null);
 __decorate([
     (0, microservices_1.MessagePattern)({ cmd: 'download' }),
     __metadata("design:type", Function),

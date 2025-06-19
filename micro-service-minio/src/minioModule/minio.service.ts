@@ -77,12 +77,22 @@ export class MinioService {
       objectName,
     );
     const chunks: Buffer[] = [];
-
     for await (const chunk of stream) {
       chunks.push(chunk);
     }
-
     console.log('已成功从MINIO获取文件');
     return Buffer.concat(chunks);
+  }
+
+  // 获取Range Object的流
+  async getRangeObjectStream(objectName: string, start: number, end: number) {
+    const rangeStream = await this.client.getPartialObject(
+      minioConfig.bucketName,
+      objectName,
+      start,
+      end - start + 1,
+    );
+    console.log(`以获取获取MINIO流: bytes=${start}-${end}`);
+    return rangeStream;
   }
 }

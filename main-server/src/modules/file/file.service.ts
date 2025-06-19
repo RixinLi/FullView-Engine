@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom, Observable } from 'rxjs';
 import { loadedFileDo } from './do/loadedFile.do';
+import { mininFileInfoDto } from './do/mininFileInfo.do';
 
 @Injectable()
 export class FileService {
@@ -10,6 +11,14 @@ export class FileService {
   //文件发现
   async getFiles() {
     const result = await firstValueFrom(this.minioClient.send({ cmd: 'GetMinioFiles' }, {}));
+    return result;
+  }
+
+  // 文件信息
+  async getFileInfo(filename: string): Promise<mininFileInfoDto> {
+    const result: mininFileInfoDto = await firstValueFrom(
+      this.minioClient.send({ cmd: 'GetMinioFileInfo' }, filename)
+    );
     return result;
   }
 
@@ -39,12 +48,17 @@ export class FileService {
     return { status: 'upload_started', streamId };
   }
 
+  // 文件range Buffer传输
+  async fileRangeDownload(filename: string, start: number, end: number): Promise<Buffer> {
+    const buffer = await firstValueFrom(
+      this.minioClient.send({ cmd: 'rangeDownload' }, { filename, start, end })
+    );
+    return Buffer.from(buffer);
+  }
+
   // 文件分片下载
   async fileDownload(filename: string): Promise<loadedFileDo> {
-    const fileInfo = await firstValueFrom(
-      this.minioClient.send({ cmd: 'GetMinioFileInfo' }, filename)
-    );
-    console.log(fileInfo);
+    const fileInfo = await this.getFileInfo(filename);
     const { name, size, contentType } = fileInfo;
 
     // 定义块大小 2MB

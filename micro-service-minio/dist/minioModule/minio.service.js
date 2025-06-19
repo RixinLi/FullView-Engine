@@ -66,6 +66,11 @@ let MinioService = class MinioService {
         console.log('已成功从MINIO获取文件');
         return Buffer.concat(chunks);
     }
+    async getRangeObjectStream(objectName, start, end) {
+        const rangeStream = await this.client.getPartialObject(minio_config_1.minioConfig.bucketName, objectName, start, end - start + 1);
+        console.log(`以获取获取MINIO流: bytes=${start}-${end}`);
+        return rangeStream;
+    }
 };
 exports.MinioService = MinioService;
 exports.MinioService = MinioService = __decorate([

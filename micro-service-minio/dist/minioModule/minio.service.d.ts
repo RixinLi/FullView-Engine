@@ -1,3 +1,4 @@
+import { Readable } from 'stream';
 export declare class MinioService {
     private readonly client;
     constructor();
@@ -11,4 +12,5 @@ export declare class MinioService {
         etag: string;
     } | undefined>;
     getObjectAsBuffer(objectName: string): Promise<Buffer>;
+    getRangeObjectStream(objectName: string, start: number, end: number): Promise<Readable>;
 }
