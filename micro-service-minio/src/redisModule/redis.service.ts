@@ -1,5 +1,5 @@
 import { InjectRedis } from '@nestjs-modules/ioredis';
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import Redis, { RedisKey } from 'ioredis';
 
 @Injectable()
@@ -18,6 +18,19 @@ export class RedisService {
 
   async del(key: RedisKey) {
     await this.redis.del(key);
+  }
+
+  async getValue(key: RedisKey): Promise<Object | null> {
+    const val = await this.redis.get(key);
+    if (!val) return null;
+    return JSON.parse(val);
+  }
+
+  async setValue(key: RedisKey, val: Object) {
+    const retval = await this.redis.set(key, JSON.stringify(val));
+    if (!retval) {
+      throw new InternalServerErrorException(`缓存${key}:${val}失败`);
+    }
   }
 
   // async hasKey(key: RedisKey): Promise<boolean> {
