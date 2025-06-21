@@ -36,6 +36,14 @@ let RedisController = class RedisController {
         }
         return retval;
     }
+    async handleDelCache(data) {
+        try {
+            await this.redisService.del(data.key);
+        }
+        catch (e) {
+            console.log(e);
+        }
+    }
 };
 exports.RedisController = RedisController;
 __decorate([
@@ -51,6 +59,13 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], RedisController.prototype, "handleSetCache", null);
+__decorate([
+    (0, microservices_1.EventPattern)('delCache'),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], RedisController.prototype, "handleDelCache", null);
 exports.RedisController = RedisController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [redis_service_1.RedisService])

@@ -41,4 +41,14 @@ export class RedisController {
     }
     return retval;
   }
+
+  // 删除缓存
+  @EventPattern('delCache')
+  async handleDelCache(@Payload() data: { key: RedisKey }) {
+    try {
+      await this.redisService.del(data.key);
+    } catch (e) {
+      console.log(e);
+    }
+  }
 }

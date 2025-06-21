@@ -10,4 +10,7 @@ export declare class RedisController {
         ttlTime: number;
         ttlUnit: string;
     }): Promise<"OK">;
+    handleDelCache(data: {
+        key: RedisKey;
+    }): Promise<void>;
 }

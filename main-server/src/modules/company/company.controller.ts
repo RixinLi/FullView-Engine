@@ -28,6 +28,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { User } from '../user/user.entity';
 import { Company } from './company.entity';
 import { firstValueFrom } from 'rxjs';
+import { createECDH } from 'crypto';
 
 @Controller('company')
 export class CompanyController {
@@ -176,6 +177,20 @@ export class CompanyController {
         HttpStatus.BAD_REQUEST
       );
     }
+
+    // 创建公司成功后, 打入redis缓存
+    //打redis缓存
+    try {
+      this.RedisClient.emit('setCache', {
+        key: this.nameSpace + createdCompany.company_code,
+        val: createdCompany,
+        ttlTime: this.ttlTime,
+        ttlUnit: this.ttlUnit,
+      });
+    } catch (e) {
+      console.log(e);
+    }
+
     return Result.success(createdCompany, HttpStatus.CREATED.toString(), '创建公司成功');
   }
 
@@ -195,6 +210,19 @@ export class CompanyController {
         HttpStatus.BAD_REQUEST
       );
     }
+
+    // 更新redis缓存
+    try {
+      this.RedisClient.emit('setCache', {
+        key: this.nameSpace + updatedCompany.company_code,
+        val: updatedCompany,
+        ttlTime: this.ttlTime,
+        ttlUnit: this.ttlUnit,
+      });
+    } catch (e) {
+      console.log(e);
+    }
+
     return Result.success(updatedCompany, HttpStatus.OK.toString(), '更新公司成功');
   }
 
@@ -203,9 +231,14 @@ export class CompanyController {
   */
   @Delete('deleteOne')
   async deleteOneCompany(@Query('company_code') company_code: string) {
+    if (!company_code) {
+      throw new HttpException('请提供company_code', HttpStatus.BAD_REQUEST);
+    }
+
     const res: DeleteResult = await this.companyService.deleteOneCompany(company_code);
 
     if (res.affected && res.affected > 0) {
+      await this.RedisClient.emit('delCache', { key: this.nameSpace + company_code });
       return Result.success(
         res.affected,
         HttpStatus.OK.toString(),
