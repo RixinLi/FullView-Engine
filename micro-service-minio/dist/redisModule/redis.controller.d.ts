@@ -1,7 +1,13 @@
-import { RedisRequestDto, RedisResponseDto } from './app.dto';
+import { RedisKey } from 'ioredis';
 import { RedisService } from './redis.service';
 export declare class RedisController {
     private readonly redisService;
     constructor(redisService: RedisService);
-    redisKeyValue(requestDto: RedisRequestDto): Promise<RedisResponseDto>;
+    redisCacheSearch(key: RedisKey): Promise<Object>;
+    handleSetCache(data: {
+        key: RedisKey;
+        val: Object;
+        ttlTime: number;
+        ttlUnit: string;
+    }): Promise<"OK">;
 }

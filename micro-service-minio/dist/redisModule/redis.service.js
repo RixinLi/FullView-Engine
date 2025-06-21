@@ -21,12 +21,6 @@ let RedisService = class RedisService {
     constructor(redis) {
         this.redis = redis;
     }
-    async redisKeyValue(requestDto) {
-        const { redis } = requestDto;
-        await Promise.all(Object.entries(redis).map(([key, value]) => this.redis.set(key, value)));
-        const resultEntries = await Promise.all(Object.keys(redis).map(async (key) => [key, await this.redis.get(key)]));
-        return { redis: Object.fromEntries(resultEntries) };
-    }
     async setBuffer(key, buffer) {
         await this.redis.set(key, buffer);
     }
@@ -36,6 +30,19 @@ let RedisService = class RedisService {
     }
     async del(key) {
         await this.redis.del(key);
+    }
+    async getValue(key) {
+        const val = await this.redis.get(key);
+        if (val === null)
+            return null;
+        return JSON.parse(val);
+    }
+    async setValue(key, val, ttlTime, ttlUnit) {
+        const retval = await this.redis.set(key, JSON.stringify(val), 'EX', ttlTime);
+        if (!retval) {
+            throw new common_1.InternalServerErrorException(`缓存${key}:${val}失败`);
+        }
+        return retval;
     }
 };
 exports.RedisService = RedisService;

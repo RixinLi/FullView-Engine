@@ -8,28 +8,49 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RedisController = void 0;
 const common_1 = require("@nestjs/common");
 const microservices_1 = require("@nestjs/microservices");
-const app_dto_1 = require("./app.dto");
 const redis_service_1 = require("./redis.service");
 let RedisController = class RedisController {
     redisService;
     constructor(redisService) {
         this.redisService = redisService;
     }
-    async redisKeyValue(requestDto) {
-        return this.redisService.redisKeyValue(requestDto);
+    async redisCacheSearch(key) {
+        const val = await this.redisService.getValue(key);
+        if (val === null) {
+            throw new microservices_1.RpcException(`缓存失效,没找到键为${key}的值`);
+        }
+        return val;
+    }
+    async handleSetCache(data) {
+        const { key, val, ttlTime, ttlUnit } = data;
+        const retval = await this.redisService.setValue(key, val, ttlTime, ttlUnit);
+        if (retval === null) {
+            throw new microservices_1.RpcException(`缓存${key}:${val}失败`);
+        }
+        return retval;
     }
 };
 exports.RedisController = RedisController;
 __decorate([
-    (0, microservices_1.MessagePattern)('redis'),
+    (0, microservices_1.MessagePattern)({ cmd: 'getCache' }),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [app_dto_1.RedisRequestDto]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], RedisController.prototype, "redisKeyValue", null);
+], RedisController.prototype, "redisCacheSearch", null);
+__decorate([
+    (0, microservices_1.EventPattern)('setCache'),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], RedisController.prototype, "handleSetCache", null);
 exports.RedisController = RedisController = __decorate([
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [redis_service_1.RedisService])

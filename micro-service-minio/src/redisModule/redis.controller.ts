@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, InternalServerErrorException } from '@nestjs/common';
 import {
   EventPattern,
   MessagePattern,
@@ -13,15 +13,32 @@ import { RedisService } from './redis.service';
 export class RedisController {
   constructor(private readonly redisService: RedisService) {}
 
+  // 获取缓存
   @MessagePattern({ cmd: 'getCache' })
   async redisCacheSearch(key: RedisKey) {
-    const val = this.redisService.getValue(key);
+    const val = await this.redisService.getValue(key);
     if (val === null) {
       throw new RpcException(`缓存失效,没找到键为${key}的值`);
     }
     return val;
   }
 
+  // 设置缓存
   @EventPattern('setCache')
-  async handleSetCache() {}
+  async handleSetCache(
+    @Payload()
+    data: {
+      key: RedisKey;
+      val: Object;
+      ttlTime: number;
+      ttlUnit: string;
+    },
+  ) {
+    const { key, val, ttlTime, ttlUnit } = data;
+    const retval = await this.redisService.setValue(key, val, ttlTime, ttlUnit);
+    if (retval === null) {
+      throw new RpcException(`缓存${key}:${val}失败`);
+    }
+    return retval;
+  }
 }

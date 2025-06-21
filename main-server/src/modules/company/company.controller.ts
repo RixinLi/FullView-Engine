@@ -13,6 +13,7 @@ import {
   HttpException,
   UseInterceptors,
   filterLogLevels,
+  Inject,
 } from '@nestjs/common';
 import { CompanyService } from './company.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
@@ -23,10 +24,21 @@ import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
 import { ResponseCompanyDto } from './dto/response-company.dto';
 import { plainToClass } from 'class-transformer';
 import { FilterQueryCompanyDto } from './dto/filter-query-company.dto';
+import { ClientProxy } from '@nestjs/microservices';
+import { User } from '../user/user.entity';
+import { Company } from './company.entity';
+import { firstValueFrom } from 'rxjs';
 
 @Controller('company')
 export class CompanyController {
-  constructor(private readonly companyService: CompanyService) {}
+  private readonly nameSpace: string = 'companies:';
+  private readonly ttlTime: number = 3600;
+  private readonly ttlUnit: string = 'EX';
+
+  constructor(
+    private readonly companyService: CompanyService,
+    @Inject('MINIO_SERVICE') readonly RedisClient: ClientProxy /* 缓存的键选择为company_code */
+  ) {}
 
   /*
   查询
@@ -110,6 +122,21 @@ export class CompanyController {
 
   @Get('findOne')
   async findOneCompany(@Body() body: QueryCompanyDto) {
+    // 先查看Redis缓存是否存在
+    try {
+      const val: Object = await firstValueFrom(
+        this.RedisClient.send({ cmd: 'getCache' }, this.nameSpace + body.company_code)
+      );
+      if (val != null) {
+        console.log(`使用缓存key:${this.nameSpace + body.company_code}`);
+        return Result.success(
+          plainToClass(ResponseCompanyDto, val, { excludeExtraneousValues: true })
+        );
+      }
+    } catch (e) {
+      console.log(e);
+    }
+
     const res = await this.companyService.findOne(body);
     if (!res) {
       throw new HttpException(
@@ -117,6 +144,19 @@ export class CompanyController {
         HttpStatus.NOT_FOUND
       );
     }
+
+    //打redis缓存
+    try {
+      this.RedisClient.emit('setCache', {
+        key: this.nameSpace + body.company_code,
+        val: res,
+        ttlTime: this.ttlTime,
+        ttlUnit: this.ttlUnit,
+      });
+    } catch (e) {
+      console.log(e);
+    }
+
     return Result.success(plainToClass(ResponseCompanyDto, res, { excludeExtraneousValues: true }));
   }
 

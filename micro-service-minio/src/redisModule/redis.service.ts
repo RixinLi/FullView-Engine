@@ -22,15 +22,21 @@ export class RedisService {
 
   async getValue(key: RedisKey): Promise<Object | null> {
     const val = await this.redis.get(key);
-    if (!val) return null;
+    if (val === null) return null;
     return JSON.parse(val);
   }
 
-  async setValue(key: RedisKey, val: Object) {
-    const retval = await this.redis.set(key, JSON.stringify(val));
+  async setValue(key: RedisKey, val: Object, ttlTime: number, ttlUnit: string) {
+    const retval = await this.redis.set(
+      key,
+      JSON.stringify(val),
+      'EX',
+      ttlTime,
+    );
     if (!retval) {
       throw new InternalServerErrorException(`缓存${key}:${val}失败`);
     }
+    return retval;
   }
 
   // async hasKey(key: RedisKey): Promise<boolean> {

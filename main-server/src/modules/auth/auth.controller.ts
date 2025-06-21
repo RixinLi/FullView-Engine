@@ -30,25 +30,10 @@ export class AuthController {
     // @Inject('CALC_SERVICE') private calcClient: ClientProxy,  //原本的TCP方法
     @Inject('MATH_SERVICE') private calcClient: ClientProxy, // REDIS的方法
     @Inject('LOG_SERVICE') private logClient: ClientProxy,
-    @Inject('REDIS_SERVICE') private rediesClient: ClientProxy,
     private readonly authService: AuthService
   ) {}
 
-  @Public()
-  @HttpCode(HttpStatus.OK)
-  @Get()
-  calc(@Query('num') str): Observable<number> {
-    const numArr = str.split(',').map((item) => parseInt(item));
-    this.logClient.emit('log', 'calc:' + numArr);
-    return this.calcClient.send('sum', numArr);
-  }
-
-  @Public()
-  @HttpCode(HttpStatus.OK)
-  @Post('redis')
-  redis(@Body() redisKeyValue: RedisRequestDto) {
-    return this.rediesClient.send('redis', redisKeyValue);
-  }
+  
 
   @Public()
   @UseInterceptors(ApiRateLimiterInterceptor) // 对相同ip的login获取access_token获取进行限制
