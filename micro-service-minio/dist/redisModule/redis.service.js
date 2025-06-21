@@ -21,6 +21,8 @@ let RedisService = class RedisService {
     constructor(redis) {
         this.redis = redis;
     }
+    refreshTime = 3600;
+    thresholdTime = 3600;
     async setBuffer(key, buffer) {
         await this.redis.set(key, buffer);
     }
@@ -35,6 +37,15 @@ let RedisService = class RedisService {
         const val = await this.redis.get(key);
         if (val === null)
             return null;
+        const ttlTime = await this.redis.ttl(key);
+        if (ttlTime !== -1 && ttlTime < this.thresholdTime) {
+            const lockKey = `lock:refresh:${key}`;
+            const lockVal = Date.now().toString();
+            const acquired = await this.redis.set(lockKey, lockVal, 'EX', 30, 'NX');
+            if (acquired) {
+                await this.redis.set(key, val, 'EX', this.refreshTime);
+            }
+        }
         return JSON.parse(val);
     }
     async setValue(key, val, ttlTime, ttlUnit) {
