@@ -14,7 +14,7 @@ export class AuthService {
   ) {}
 
   // 登录
-  async signIn(username: string, password: string): Promise<{ access_token: string }> {
+  async signIn(username: string, password: string): Promise<Object> {
     const dbUser = await this.userService.findbyUsername(username);
     if (dbUser?.password != hashSaltPassword(password)) {
       throw new UnauthorizedException({
@@ -29,6 +29,7 @@ export class AuthService {
       role: dbUser.role,
     };
     return {
+      user: dbUser,
       access_token: await this.jwtService.signAsync(payload),
     };
   }

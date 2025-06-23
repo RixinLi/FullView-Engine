@@ -11,6 +11,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Button from "@mui/material/Button";
 import NextLink from "next/link";
 import { useForm } from "react-hook-form";
+import request from "../../utils/request";
 
 function HeaderSVG() {
   return (
@@ -33,9 +34,22 @@ export default function signIn() {
   } = useForm();
 
   // 注册handle函数
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     console.log("Form submitted:", data);
     // 发请求、跳转等
+    try {
+      const res = await request.post("auth/login", {
+        username: data.email,
+        password: data.password,
+      });
+      if (res.code === "200") {
+        console.log("登录成功", res.data);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        localStorage.setItem("token", res.data.access_token);
+      }
+    } catch (error) {
+      console.error("登录失败:", error);
+    }
   };
 
   return (

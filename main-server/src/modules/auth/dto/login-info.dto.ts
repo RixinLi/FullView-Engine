@@ -1,6 +1,7 @@
 import { IsString, IsNumber, IsOptional } from 'class-validator';
+import { User } from 'src/modules/user/user.entity';
 
-export class LoginInfo {
+export class LoginRequestInfo {
   // username
   @IsString()
   username: string;
