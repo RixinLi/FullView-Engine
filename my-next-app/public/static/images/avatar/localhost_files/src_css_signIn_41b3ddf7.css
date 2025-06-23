@@ -1,0 +1,45 @@
+/* [project]/src/css/signIn.css [client] (css) */
+html, body, #__next {
+  height: 100%;
+}
+
+.css-BasicBox {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  max-width: 520px;
+  min-height: 100%;
+  margin: 0 auto;
+  display: flex;
+}
+
+.css-HeaderSVG {
+  fill: #376fd0;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 32px;
+}
+
+.css-SignInPaper {
+  color: #000000de;
+  box-shadow: var(--Paper-shadow);
+  background-color: #fff;
+  background-image: none;
+  border-radius: 4px;
+  width: 500px;
+  height: 500px;
+  padding: 24px;
+  transition: box-shadow .3s cubic-bezier(.4, 0, .2, 1);
+}
+
+.css-Avatar {
+  justify-content: center;
+  align-items: center;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 20px;
+  position: relative;
+}
+
+
+/*# sourceMappingURL=src_css_signIn_41b3ddf7.css.map*/
