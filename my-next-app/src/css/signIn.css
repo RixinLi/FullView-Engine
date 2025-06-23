@@ -30,7 +30,10 @@ body,
   border-radius: 4px;
   padding: 24px;
   width: 500;
-  height: 500;
+  height: "fit-content";
+  display: flex;
+  flex-direction: column;
+  gap: 2;
 }
 
 .css-Avatar {
