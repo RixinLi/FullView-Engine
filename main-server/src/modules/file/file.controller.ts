@@ -15,6 +15,7 @@ import { FileService } from './file.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Public } from '../auth/common/auth.decorator';
 import { downloadResquestDto } from './dto/downloadRequest.dto';
+import { Result } from 'src/common/result';
 
 @Controller('file')
 export class FileController {
@@ -33,12 +34,18 @@ export class FileController {
       mimeType: file.mimetype,
       size: file.size,
     };
-    console.log(file.mimetype, file.size);
+    // console.log(file.mimetype, file.size);
     // if (file.size > 1024 * 1024 * 5) {
     //   throw new HttpException('文件过于庞大', HttpStatus.BAD_REQUEST);
     // }
-    await this.fileService.fileUpload(payload);
-    return { message: '文件已发送至 MinIO 微服务对端处理' };
+    try {
+      await this.fileService.fileUpload(payload);
+    } catch (e) {
+      console.log(e);
+      throw new HttpException('文件上传失败', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    // upload成功后返回文件名
+    return Result.success({ filename: payload.filename });
   }
 
   @Public()
