@@ -66,28 +66,48 @@ export default function forgotPassword() {
     }
   }, []);
 
-  // 当user改变时更新localStorage
+  // 处理user变更时页面渲染
+  // 1. 更新本地用户信息
+  // 2. 加载avatar
+  const [preview, setPreview] = useState(null);
   React.useEffect(() => {
+    const fetctAvatar = async () => {
+      try {
+        // 获取对应avatar二进制文件
+        const res = await request.get(
+          `file/MinioDownloadByQuery/?filename=${user.avatar}`,
+          { responseType: "blob" }
+        );
+
+        // 创建Blob URL预览图像
+        const file = new File([res], user.avatar, { type: res.type });
+
+        // 用FileReader生成base64预览
+        const reader = new FileReader();
+        reader.onloadend = () => setPreview(reader.result);
+        reader.readAsDataURL(file);
+      } catch (e) {
+        console.log(e);
+      }
+    };
     if (user) {
       localStorage.setItem("user", JSON.stringify(user));
+      if (user.avatar) {
+        fetctAvatar();
+      }
     }
   });
 
   // 上传图片
-  const [preview, setPreview] = useState(null);
   const handleAvatar = async (e) => {
     const file = e.target.files?.[0];
     if (!file) {
       console.error("upload file error");
       return;
     }
-    const reader = new FileReader();
-
     // 构造 FormData
     const formData = new FormData();
     formData.append("file", file);
-    reader.onloadend = () => setPreview(reader.result);
-    reader.readAsDataURL(file);
 
     try {
       const res = await request.post("file/MinioUpload", formData, {
@@ -101,24 +121,34 @@ export default function forgotPassword() {
         avatar: "imgs/" + res.data.filename,
       }));
       localStorage.setItem("user", JSON.stringify(user));
-      // if (res.code === "200") {
-      //   // 更新User和localStorage
-      //   setUser((prev) => ({
-      //     ...prev,
-      //     avatar: res.data.filename,
-      //   }));
-      //   localStorage.setItem("user", JSON.stringify(user));
-      // }
     } catch (e) {
       console.log(e);
     }
+  };
+
+  // 更新用户信息
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+  const handleUserUpadte = async (data) => {
+    setUser((prev) => ({
+      ...prev,
+      name: data.name,
+    }));
   };
 
   // 控制渲染
   if (!loaded) return null;
   return (
     <Box className="css-BasicBox">
-      <Paper className="css-UserInfoPaper">
+      <Paper
+        className="css-UserInfoPaper"
+        component="form"
+        onSubmit={handleSubmit(handleUserUpadte)}
+        noValidate
+      >
         <Typography marginBottom={2}>更改用户信息</Typography>
         <Box
           sx={{
@@ -160,9 +190,18 @@ export default function forgotPassword() {
             defaultValue={user.username}
             disabled
           ></TextField>
-          <TextField label="name" defaultValue={user.name}></TextField>
+          <TextField
+            label="name"
+            defaultValue={user.name}
+            {...register("name", { required: "Name is required" })}
+            error={!!errors.name}
+            helperText={errors.name?.message}
+          ></TextField>
           <TextField label="role" defaultValue={user.role} disabled></TextField>
         </ThemeProvider>
+        <Button variant="contained" type="submit">
+          Update
+        </Button>
       </Paper>
     </Box>
   );
