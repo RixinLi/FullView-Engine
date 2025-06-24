@@ -115,7 +115,7 @@ export default function forgotPassword() {
           "Content-Type": "image/jpeg",
         },
       });
-      console.log(res.data.filename);
+      // console.log(res.data.filename);
 
       // 设置定时器防止过快获取文件
       setTimeout(() => {
