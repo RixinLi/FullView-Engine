@@ -20,6 +20,11 @@
       "label": "micro-service-minio",
       "type": "shell",
       "command": "cd micro-service-minio; npm run start"
+    },
+    {
+      "label": "my-next-app",
+      "type": "shell",
+      "command": "cd my-next-app; npm run dev"
     }
   ]
 }

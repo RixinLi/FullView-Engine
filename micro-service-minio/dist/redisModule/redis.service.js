@@ -41,9 +41,12 @@ let RedisService = class RedisService {
         if (ttlTime !== -1 && ttlTime < this.thresholdTime) {
             const lockKey = `lock:refresh:${key}`;
             const lockVal = Date.now().toString();
-            const acquired = await this.redis.set(lockKey, lockVal, 'EX', 30, 'NX');
+            const acquired = await this.redis.set(lockKey, lockVal, 'EX', 5, 'NX');
             if (acquired) {
                 await this.redis.set(key, val, 'EX', this.refreshTime);
+                if (lockVal === (await this.redis.get(lockKey))) {
+                    await this.redis.del(lockKey);
+                }
             }
         }
         return JSON.parse(val);

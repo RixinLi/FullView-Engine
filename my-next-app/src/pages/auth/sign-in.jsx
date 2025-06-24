@@ -26,6 +26,17 @@ function HeaderSVG() {
 }
 
 export default function signIn() {
+  // 控制渲染：保证user存在
+  const [user, setUser] = React.useState(null);
+  const [loaded, setloaded] = React.useState(false);
+  React.useEffect(() => {
+    // 确保是在客户端运行
+    const cachedUser = localStorage.getItem("user");
+    if (cachedUser) {
+      setUser(JSON.parse(cachedUser));
+      setloaded(true);
+    }
+  }, []);
   //注册useForm
   const {
     register,
@@ -52,6 +63,8 @@ export default function signIn() {
     }
   };
 
+  // 控制渲染节奏 保证预先加载成功
+  if (!loaded) return null;
   return (
     <Box className="css-BasicBox">
       <HeaderSVG />
@@ -71,7 +84,7 @@ export default function signIn() {
           className="css-firstTypography"
           sx={{ fontSize: "1.5rem", fontWeight: 600 }}
         >
-          Welcome back, Lucy!
+          Welcome back, {user.name}!
         </Typography>
         <Typography className="css-firstTypography" sx={{ marginBottom: 3 }}>
           Sign in to your account to continue

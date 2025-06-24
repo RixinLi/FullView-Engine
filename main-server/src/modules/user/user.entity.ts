@@ -32,4 +32,12 @@ export class User {
     comment: '用户角色属性',
   })
   role?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    comment: '用户头像minio文件路径',
+  })
+  avatar?: string;
 }
