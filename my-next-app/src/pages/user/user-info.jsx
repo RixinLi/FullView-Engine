@@ -116,11 +116,15 @@ export default function forgotPassword() {
         },
       });
       console.log(res.data.filename);
-      setUser((prev) => ({
-        ...prev,
-        avatar: "imgs/" + res.data.filename,
-      }));
-      localStorage.setItem("user", JSON.stringify(user));
+
+      // 设置定时器防止过快获取文件
+      setTimeout(() => {
+        setUser((prev) => ({
+          ...prev,
+          avatar: "imgs/" + res.data.filename,
+        }));
+        localStorage.setItem("user", JSON.stringify(user));
+      }, 1500);
     } catch (e) {
       console.log(e);
     }
@@ -133,10 +137,26 @@ export default function forgotPassword() {
     formState: { errors },
   } = useForm();
   const handleUserUpadte = async (data) => {
-    setUser((prev) => ({
-      ...prev,
-      name: data.name,
-    }));
+    // 创建新user实例
+    const updatedUser = {
+      ...user, // 当前旧 user
+      name: data.name, // 覆盖新 name
+    };
+
+    //更新前端状态
+    // 更新前端状态（异步，不影响逻辑）
+    setUser(updatedUser);
+
+    // 拿最新的User去update后端数据库
+    try {
+      const res = await request.patch("user/update", updatedUser);
+      if (res.code === "200") {
+        // console.log(res);
+        alert("用户信息已成功更新！");
+      }
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   // 控制渲染

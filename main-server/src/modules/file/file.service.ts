@@ -42,7 +42,6 @@ export class FileService {
         mimeType,
         isLast: i === totalChunks - 1,
       });
-      console.log('已发送' + streamId + '的chunk: ' + i);
     }
 
     return { status: 'upload_started', streamId };
@@ -85,9 +84,7 @@ export class FileService {
         )
       );
       chunks.push(Buffer.from(chunk));
-      console.log('已接收到' + streamId + ':' + i);
     }
-    console.log('接收完毕');
     const resdo: loadedFileDo = {
       contentType: contentType,
       name: name,

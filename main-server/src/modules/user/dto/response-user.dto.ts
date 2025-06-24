@@ -13,4 +13,7 @@ export class ResponseUserDto {
 
   @Expose()
   role: string;
+
+  @Expose()
+  avatar?: string;
 }

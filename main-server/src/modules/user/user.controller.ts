@@ -80,17 +80,15 @@ export class UserController {
       return true;
     }
 
-    const targerUser: User = { id: request.body.id };
-    // 检查 Update 权限
-    if (!ability.can(Action.Update, targerUser)) {
-      throw new ForbiddenException('你没有权限更新该用户信息');
-    }
+    // 待解决
+    // const targerUser: User = { id: request.body.id };
+    // // 检查 Update 权限
+    // if (!ability.can(Action.Update, targerUser)) {
+    //   console.log(targerUser);
+    //   throw new ForbiddenException('你没有权限更新该用户信息');
+    // }
     return true;
   })
-
-  /*
-  更新
-  */
   @Patch('update')
   async UpdateOneUser(@Body() body: UpdateUserDto) {
     await this.userService.update(body);

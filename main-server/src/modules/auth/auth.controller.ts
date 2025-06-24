@@ -23,6 +23,8 @@ import { Observable } from 'rxjs';
 import { RedisRequestDto, RedisResponseDto } from './dto/redis.dto';
 import { ApiRateLimiterInterceptor } from 'src/utils/interceptor/ApiRateLimitInterceptor.utils';
 import { LoginRequestInfo } from './dto/login-info.dto';
+import { ResponseUserDto } from '../user/dto/response-user.dto';
+import { plainToClass } from 'class-transformer';
 
 @Controller('auth')
 export class AuthController {

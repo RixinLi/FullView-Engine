@@ -29,12 +29,15 @@ export default function signIn() {
   // 控制渲染：保证user存在
   const [user, setUser] = React.useState(null);
   const [loaded, setloaded] = React.useState(false);
+
+  // 默认开启
+
+  // 当有本地user缓存
   React.useEffect(() => {
     // 确保是在客户端运行
     const cachedUser = localStorage.getItem("user");
     if (cachedUser) {
       setUser(JSON.parse(cachedUser));
-      setloaded(true);
     }
   }, []);
   //注册useForm
@@ -57,6 +60,8 @@ export default function signIn() {
         console.log("登录成功", res.data);
         localStorage.setItem("user", JSON.stringify(res.data.user));
         localStorage.setItem("token", res.data.access_token);
+        // 登陆后进去update界面
+        window.location.href = "/user/user-info";
       }
     } catch (error) {
       console.error("登录失败:", error);
@@ -64,7 +69,6 @@ export default function signIn() {
   };
 
   // 控制渲染节奏 保证预先加载成功
-  if (!loaded) return null;
   return (
     <Box className="css-BasicBox">
       <HeaderSVG />
@@ -80,12 +84,14 @@ export default function signIn() {
           src="/static/images/avatar/1.jpg"
           sx={{ width: 92, height: 92 }}
         />
-        <Typography
-          className="css-firstTypography"
-          sx={{ fontSize: "1.5rem", fontWeight: 600 }}
-        >
-          Welcome back, {user.name}!
-        </Typography>
+        {user && (
+          <Typography
+            className="css-firstTypography"
+            sx={{ fontSize: "1.5rem", fontWeight: 600 }}
+          >
+            Welcome back, {user.name}!
+          </Typography>
+        )}
         <Typography className="css-firstTypography" sx={{ marginBottom: 3 }}>
           Sign in to your account to continue
         </Typography>

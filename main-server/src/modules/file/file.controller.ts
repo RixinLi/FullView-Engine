@@ -34,10 +34,7 @@ export class FileController {
       mimeType: file.mimetype,
       size: file.size,
     };
-    // console.log(file.mimetype, file.size);
-    // if (file.size > 1024 * 1024 * 5) {
-    //   throw new HttpException('文件过于庞大', HttpStatus.BAD_REQUEST);
-    // }
+
     try {
       await this.fileService.fileUpload(payload);
     } catch (e) {
@@ -58,7 +55,6 @@ export class FileController {
   @Get('MinioDownload')
   async downloadFile(@Body() body: downloadResquestDto, @Res() res, @Req() req) {
     const { filename } = body;
-    console.log('正在下载文件: ' + filename);
     if (!filename) {
       throw new HttpException('请输入正确文件名', HttpStatus.BAD_REQUEST);
     }
@@ -85,7 +81,6 @@ export class FileController {
       const chunkSize = end - start + 1;
       // 改成调用支持fileDownloadRange的微服务接口
       const fileChunk: Buffer = await this.fileService.fileRangeDownload(filename, start, end);
-      // console.log(fileChunk);
 
       // 设置http信息
       res.status(206);
@@ -108,10 +103,10 @@ export class FileController {
 
         await res.end(loadedFile.buffer); // ⬅️ 把 Buffer 写入 HTTP 响应
       } catch (e) {
-        console.log('下载失败' + e.message);
+        // console.log('下载失败' + e.message);
         throw new HttpException('下载失败', HttpStatus.BAD_REQUEST);
       } finally {
-        console.log('下载成功');
+        // console.log('下载成功');
       }
     }
   }

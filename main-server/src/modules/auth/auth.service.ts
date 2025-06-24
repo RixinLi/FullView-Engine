@@ -5,6 +5,8 @@ import { USER_ROLE_ENUM } from 'src/common/enum/userEnum';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { generateUUID, hashSaltPassword } from 'src/utils/userInfo.utils';
+import { ResponseUserDto } from '../user/dto/response-user.dto';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class AuthService {
@@ -29,7 +31,8 @@ export class AuthService {
       role: dbUser.role,
     };
     return {
-      user: dbUser,
+      // user做好隔离
+      user: plainToClass(ResponseUserDto, dbUser, { excludeExtraneousValues: true }),
       access_token: await this.jwtService.signAsync(payload),
     };
   }

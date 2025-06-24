@@ -36,6 +36,7 @@ export class AuthGuard implements CanActivate {
       });
       request['user'] = payload;
     } catch {
+      console.log('token过期或者失效');
       throw new UnauthorizedException({ message: 'token校验失败' });
     }
 

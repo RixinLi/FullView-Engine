@@ -24,7 +24,7 @@
     {
       "label": "my-next-app",
       "type": "shell",
-      "command": "cd my-next-app; npm run dev"
+      "command": "cd my-next-app; npm run dev;"
     }
   ]
 }
