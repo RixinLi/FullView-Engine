@@ -29,17 +29,46 @@ export default function signIn() {
   // 控制渲染：保证user存在
   const [user, setUser] = React.useState(null);
   const [loaded, setloaded] = React.useState(false);
-
-  // 默认开启
-
   // 当有本地user缓存
   React.useEffect(() => {
     // 确保是在客户端运行
-    const cachedUser = localStorage.getItem("user");
+    const cachedUser = JSON.parse(localStorage.getItem("user"));
     if (cachedUser) {
-      setUser(JSON.parse(cachedUser));
+      setUser(cachedUser);
     }
   }, []);
+
+  // img
+  const [avatar, setAvatar] = React.useState(null);
+
+  React.useEffect(() => {
+    const fetctAvatar = async () => {
+      try {
+        // 获取对应avatar二进制文件
+        const res = await request.get(
+          `file/MinioDownloadByQuery/?filename=${user.avatar}`,
+          { responseType: "blob" }
+        );
+
+        // 创建Blob URL预览图像
+        const file = new File([res], user.avatar, { type: res.type });
+
+        // 用FileReader生成base64预览
+        const reader = new FileReader();
+        reader.onloadend = () => setAvatar(reader.result);
+        reader.readAsDataURL(file);
+      } catch (e) {
+        console.log(e);
+      }
+    };
+
+    if (user && user.avatar) {
+      fetctAvatar();
+    }
+  }, [user]);
+
+  // 默认开启
+
   //注册useForm
   const {
     register,
@@ -78,12 +107,15 @@ export default function signIn() {
         onSubmit={handleSubmit(onSubmit)}
         noValidate
       >
-        <Avatar
-          className="css-Avatar"
-          alt="Remy Sharp"
-          src="/static/images/avatar/1.jpg"
-          sx={{ width: 92, height: 92 }}
-        />
+        {avatar && (
+          <Avatar
+            className="css-Avatar"
+            alt="Remy Sharp"
+            src={avatar}
+            sx={{ width: 92, height: 92 }}
+          />
+        )}
+
         {user && (
           <Typography
             className="css-firstTypography"

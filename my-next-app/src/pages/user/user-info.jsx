@@ -90,13 +90,11 @@ export default function forgotPassword() {
         console.log(e);
       }
     };
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
-      if (user.avatar) {
-        fetctAvatar();
-      }
+
+    if (user?.avatar) {
+      fetctAvatar();
     }
-  });
+  }, [user?.avatar]);
 
   // 上传图片
   const handleAvatar = async (e) => {
@@ -123,7 +121,7 @@ export default function forgotPassword() {
           ...prev,
           avatar: "imgs/" + res.data.filename,
         }));
-        localStorage.setItem("user", JSON.stringify(user));
+        // localStorage.setItem("user", JSON.stringify(user));
       }, 1500);
     } catch (e) {
       console.log(e);
@@ -146,6 +144,7 @@ export default function forgotPassword() {
     //更新前端状态
     // 更新前端状态（异步，不影响逻辑）
     setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
 
     // 拿最新的User去update后端数据库
     try {
