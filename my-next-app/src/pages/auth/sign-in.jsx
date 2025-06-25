@@ -62,7 +62,7 @@ export default function signIn() {
       }
     };
 
-    if (user && user.avatar) {
+    if (user?.avatar) {
       fetctAvatar();
     }
   }, [user]);
