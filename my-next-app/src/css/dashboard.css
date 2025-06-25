@@ -1,0 +1,16 @@
+html,
+body,
+#__next {
+  height: 100%;
+  display: flex;
+}
+
+.css_leftBox {
+  height: 100vh;
+  width: 10%;
+  background: blue;
+}
+
+.css_leftPaper {
+  color: rgba(0, 0, 0, 0.87);
+}
