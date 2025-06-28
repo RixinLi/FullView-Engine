@@ -12,6 +12,7 @@ import Button from "@mui/material/Button";
 import NextLink from "next/link";
 import { useForm } from "react-hook-form";
 import request from "../../utils/request";
+import DashboardLayout from "..";
 
 function HeaderSVG() {
   return (
@@ -25,7 +26,7 @@ function HeaderSVG() {
   );
 }
 
-export default function signIn() {
+export default function SignIn() {
   // 控制渲染：保证user存在
   const [user, setUser] = React.useState(null);
   const [loaded, setloaded] = React.useState(false);
@@ -179,3 +180,6 @@ export default function signIn() {
     </Box>
   );
 }
+
+// Next.js 会在渲染前，调用这里的 getLayout
+SignIn.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;

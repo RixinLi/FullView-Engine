@@ -51,7 +51,7 @@ const theme = createTheme({
   },
 });
 
-export default function forgotPassword() {
+export default function UserInfo() {
   // 控制渲染：保证user存在
   const [user, setUser] = React.useState(null);
   const [loaded, setloaded] = React.useState(false);
