@@ -40,4 +40,28 @@ export class User {
     comment: '用户头像minio文件路径',
   })
   avatar?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    comment: '用户的标题/职级',
+  })
+  title?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    comment: '用户的邮箱',
+  })
+  email?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    comment: '用户状态',
+  })
+  status?: string;
 }
