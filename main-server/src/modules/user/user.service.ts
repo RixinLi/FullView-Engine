@@ -57,7 +57,7 @@ export class UserService {
   /*
   创建
   */
-  async createOneUser(body: any): Promise<void> {
+  async createOneUser(body: CreateUserDto): Promise<void> {
     // **先检查 UUID 是否已存在**
     const existingUser = await this.userRepository.findOne({
       where: { id: body.id },

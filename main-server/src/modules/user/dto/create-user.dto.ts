@@ -1,6 +1,6 @@
 import { IsString, IsNumber, IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { USER_ROLE_ENUM } from 'src/common/enum/userEnum';
+import { USER_NAME_ENUM, USER_ROLE_ENUM, USER_STATUS_ENUM } from 'src/common/enum/userEnum';
 
 export class CreateUserDto {
   // uuid
@@ -16,8 +16,18 @@ export class CreateUserDto {
   password: string;
 
   @IsString()
-  name: string = USER_ROLE_ENUM.DEFAULT_USERNAME;
+  name: string = USER_NAME_ENUM.DEFAULT_NAME;
 
   @IsString()
   role: string = USER_ROLE_ENUM.USER;
+
+  @IsString()
+  @IsOptional()
+  title: string;
+
+  @IsString()
+  email: string;
+
+  @IsString()
+  status: string = USER_STATUS_ENUM.PENDING;
 }

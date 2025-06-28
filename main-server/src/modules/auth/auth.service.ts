@@ -1,12 +1,13 @@
 import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { Result } from 'src/common/result';
-import { USER_ROLE_ENUM } from 'src/common/enum/userEnum';
+import { USER_ROLE_ENUM, USER_STATUS_ENUM } from 'src/common/enum/userEnum';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { generateUUID, hashSaltPassword } from 'src/utils/userInfo.utils';
 import { ResponseUserDto } from '../user/dto/response-user.dto';
 import { plainToClass } from 'class-transformer';
+import { RegisterInfo } from './dto/register-info.dto';
 
 @Injectable()
 export class AuthService {
@@ -38,8 +39,8 @@ export class AuthService {
   }
 
   // 注册
-  async register(username: string, password: string, uuid?: string): Promise<any | null> {
-    const dbUser = await this.userService.findbyUsername(username);
+  async register(body: RegisterInfo): Promise<any | null> {
+    const dbUser = await this.userService.findbyUsername(body.username);
     if (dbUser) {
       throw new HttpException(
         Result.error('用户已存在', HttpStatus.CONFLICT.toString()),
@@ -48,10 +49,13 @@ export class AuthService {
     }
 
     const user: CreateUserDto = {
-      id: uuid || generateUUID(),
-      username: username,
-      password: hashSaltPassword(password),
-      name: username,
+      id: body.uuid || generateUUID(),
+      username: body.username,
+      password: hashSaltPassword(body.password),
+      name: body.name,
+      title: body.title,
+      email: body.email,
+      status: USER_STATUS_ENUM.PENDING,
       role: USER_ROLE_ENUM.USER,
     };
 

@@ -19,6 +19,9 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
+  FormControl,
+  InputLabel,
+  Select,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditIcon from "@mui/icons-material/Edit";
@@ -92,6 +95,35 @@ const EditDialog = ({ open, onClose, row, onSave }) => {
           onChange={handleChange}
           fullWidth
         />
+        <TextField
+          margin="dense"
+          label="邮箱"
+          name="email"
+          value={form.email || ""}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
+          margin="dense"
+          label="职位"
+          name="title"
+          value={form.title || ""}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
+          select
+          margin="dense"
+          label="状态"
+          name="status"
+          value={form.status || ""}
+          onChange={handleChange}
+          fullWidth
+        >
+          <MenuItem value="PENDING">PENDING</MenuItem>
+          <MenuItem value="APPROVED">APPROVED</MenuItem>
+          <MenuItem value="REJECTED">REJECTED</MenuItem>
+        </TextField>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>取消</Button>

@@ -51,7 +51,7 @@ export class AuthController {
   @Post('register')
   async register(@Body() body: RegisterInfo) {
     // console.log(body);
-    await this.authService.register(body.username, body.password, body.uuid);
+    await this.authService.register(body);
     return Result.success({ username: body.username }, '200', '注册成功');
   }
 
