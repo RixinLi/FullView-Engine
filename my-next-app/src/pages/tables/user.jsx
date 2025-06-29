@@ -27,6 +27,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useState, useEffect } from "react";
+import request from "../../utils/request";
 
 // 编辑操作菜单组件
 const ActionMenu = ({ row, startRowEdit, handleRowDelete }) => {
@@ -72,14 +73,18 @@ const ActionMenu = ({ row, startRowEdit, handleRowDelete }) => {
 const EditDialog = ({ open, onClose, row, onSave }) => {
   // 建立form
   const [form, setForm] = useState({});
+  const [errors, setErrors] = useState({});
 
   // 自动更新form
   useEffect(() => {
     if (row) setForm(row);
+    setErrors({});
   }, [row]);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: !value.trim() }));
   };
 
   return (
@@ -88,19 +93,25 @@ const EditDialog = ({ open, onClose, row, onSave }) => {
       <DialogTitle>编辑用户</DialogTitle>
       <DialogContent>
         <TextField
+          required
           margin="dense"
           label="姓名"
           name="name"
           value={form.name || ""}
           onChange={handleChange}
+          error={errors.name}
+          helperText={errors.name ? "姓名不能为空" : ""}
           fullWidth
         />
         <TextField
+          required
           margin="dense"
           label="邮箱"
           name="email"
           value={form.email || ""}
           onChange={handleChange}
+          error={errors.email}
+          helperText={errors.email ? "邮箱不能为空" : ""}
           fullWidth
         />
         <TextField
@@ -112,12 +123,15 @@ const EditDialog = ({ open, onClose, row, onSave }) => {
           fullWidth
         />
         <TextField
+          required
           select
           margin="dense"
           label="状态"
           name="status"
           value={form.status || ""}
           onChange={handleChange}
+          error={errors.status}
+          helperText={errors.status ? "状态不能为空" : ""}
           fullWidth
         >
           <MenuItem value="PENDING">PENDING</MenuItem>
@@ -127,7 +141,12 @@ const EditDialog = ({ open, onClose, row, onSave }) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>取消</Button>
-        <Button onClick={() => onSave(form)}>保存</Button>
+        <Button
+          onClick={() => onSave(form)}
+          disabled={Object.values(errors).some((v) => v)}
+        >
+          保存
+        </Button>
       </DialogActions>
     </Dialog>
   );
@@ -195,6 +214,21 @@ export default function UserTable() {
 
   // 动态行数据
   const [rows, setRows] = useState(initialRows);
+
+  useEffect(() => {
+    const fetchUserRows = async () => {
+      try {
+        const res = await request.get("user/findAll");
+        if (res.code === "200") {
+          setRows(res.data);
+        }
+      } catch (e) {
+        alert(e);
+      }
+    };
+    fetchUserRows();
+  }, [rows]);
+
   const [editOpen, setEditOpen] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
 
@@ -203,14 +237,28 @@ export default function UserTable() {
     setEditOpen(true);
   };
 
-  const handleDelete = (row) => {
-    setRows((prev) => prev.filter((r) => r.id !== row.id));
+  const handleDelete = async (row) => {
+    try {
+      const delRes = await request.delete("user/delete?id=" + row.id);
+      if (delRes.code === "200") {
+        setRows((prev) => prev.filter((r) => r.id !== row.id));
+      }
+    } catch (e) {
+      alert(e);
+    }
   };
 
-  const handleSave = (updatedRow) => {
-    setRows((prev) => {
-      return prev.map((r) => (r.id === updatedRow.id ? updatedRow : r));
-    });
+  const handleSave = async (updatedRow) => {
+    try {
+      const saveRes = await request.patch("user/update", updatedRow);
+      if (saveRes === "200") {
+        setRows((prev) => {
+          return prev.map((r) => (r.id === updatedRow.id ? updatedRow : r));
+        });
+      }
+    } catch (e) {
+      alert(e);
+    }
     setEditOpen(false);
   };
 

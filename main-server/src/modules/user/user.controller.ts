@@ -17,7 +17,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { QueryUserDto } from './dto/query-user.dto';
 import { Result } from 'src/common/result';
 import { ResponseUserDto } from './dto/response-user.dto';
-import { plainToClass } from 'class-transformer';
+import { plainToClass, plainToInstance } from 'class-transformer';
 import { CheckPolicies, Roles } from '../auth/common/auth.decorator';
 import { PoliciesGuard } from '../auth/policies.guard';
 import { AppAbility } from '../auth/casl/casl-ability.factory';
@@ -34,8 +34,9 @@ export class UserController {
   @Get('findAll')
   async findAll() {
     const allData = await this.userService.findAll();
-
-    return Result.success(allData);
+    return Result.success(
+      plainToInstance(ResponseUserDto, allData, { excludeExtraneousValues: true })
+    );
   }
 
   /*

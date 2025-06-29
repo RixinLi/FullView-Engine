@@ -30,7 +30,7 @@ request.interceptors.response.use(
       console.warn("未授权，跳转到登录页");
       localStorage.removeItem("user");
       localStorage.removeItem("token");
-      window.location.href = "/auth/sign-in";
+      window.location.href = "/auth/signIn";
     }
     if (error.response?.status === 429) {
       alert("登录操作太频繁");

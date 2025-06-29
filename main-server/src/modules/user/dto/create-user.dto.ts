@@ -22,7 +22,6 @@ export class CreateUserDto {
   role: string = USER_ROLE_ENUM.USER;
 
   @IsString()
-  @IsOptional()
   title: string;
 
   @IsString()

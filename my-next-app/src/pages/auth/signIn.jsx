@@ -91,7 +91,7 @@ export default function SignIn() {
         localStorage.setItem("user", JSON.stringify(res.data.user));
         localStorage.setItem("token", res.data.access_token);
         // 登陆后进去update界面
-        window.location.href = "/user/user-info";
+        window.location.href = "/";
       }
     } catch (error) {
       console.error("登录失败:", error);
@@ -149,7 +149,7 @@ export default function SignIn() {
         <Typography
           sx={{ fontSize: 12, color: "rgb(55, 111, 208);", marginBottom: 2 }}
         >
-          <Link href="/auth/sign-up" component={NextLink} underline="hover">
+          <Link href="/auth/signUp" component={NextLink} underline="hover">
             Forgot password?
           </Link>
         </Typography>
@@ -168,7 +168,7 @@ export default function SignIn() {
         <Typography sx={{ textAlign: "center" }}>
           Don't have an account yet?{" "}
           <Link
-            href="/auth/sign-up"
+            href="/auth/signUp"
             component={NextLink}
             underline="hover"
             sx={{ color: "primary.main", fontWeight: 500 }}
