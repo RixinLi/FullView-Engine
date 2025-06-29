@@ -10,7 +10,7 @@ import {
   Button,
 } from "@mui/material";
 import DashboardLayout from "..";
-import "../../css/userTable.css";
+import "../../css/table.css";
 
 import { DataGrid } from "@mui/x-data-grid";
 import {
@@ -152,9 +152,6 @@ const EditDialog = ({ open, onClose, row, onSave }) => {
   );
 };
 
-// 分页模型
-const paginationModel = { page: 0, pageSize: 5 };
-
 export default function UserTable() {
   // 列表标题
   const columns = [
@@ -212,22 +209,28 @@ export default function UserTable() {
     },
   ];
 
+  //分页模型
+  const paginationModel = { page: 0, pageSize: 5 };
+
   // 动态行数据
   const [rows, setRows] = useState(initialRows);
+  const [fetched, setFetched] = useState(false);
 
   useEffect(() => {
     const fetchUserRows = async () => {
+      // console.log("getting");
       try {
         const res = await request.get("user/findAll");
         if (res.code === "200") {
           setRows(res.data);
+          setFetched(true);
         }
       } catch (e) {
         alert(e);
       }
     };
-    fetchUserRows();
-  }, [rows]);
+    if (!fetched) fetchUserRows();
+  }, [fetched]);
 
   const [editOpen, setEditOpen] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
@@ -246,6 +249,7 @@ export default function UserTable() {
     } catch (e) {
       alert(e);
     }
+    setFetched(false);
   };
 
   const handleSave = async (updatedRow) => {
@@ -259,6 +263,7 @@ export default function UserTable() {
     } catch (e) {
       alert(e);
     }
+    setFetched(false);
     setEditOpen(false);
   };
 

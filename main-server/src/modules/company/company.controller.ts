@@ -42,10 +42,19 @@ export class CompanyController {
   ) {}
 
   /*
-  查询
+  查询all 
   */
   @Get('findAll')
-  async findAllCompanies(@Body() filterDto: FilterQueryCompanyDto) {
+  async findAllCompanies() {
+    const allData = await this.companyService.findAll();
+    return Result.success(allData);
+  }
+
+  /*
+  查询filter
+  */
+  @Get('findFilter')
+  async findFilterCompanies(@Body() filterDto: FilterQueryCompanyDto) {
     // 取出数据优先filter
 
     if (!filterDto)
@@ -54,7 +63,7 @@ export class CompanyController {
         HttpStatus.INTERNAL_SERVER_ERROR
       );
 
-    const allData = await this.companyService.findAll(filterDto);
+    const allData = await this.companyService.findAll();
 
     // 开始处理信息
     const groupedData = {

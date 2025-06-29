@@ -18,7 +18,7 @@ export class CompanyService {
   /*
   查询
   */
-  async findAll(filterDto: FilterQueryCompanyDto): Promise<Company[]> {
+  async findAll(): Promise<Company[]> {
     try {
       return await this.companyRepository.find();
     } catch (error) {
