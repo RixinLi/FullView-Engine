@@ -87,41 +87,32 @@ const EditDialog = ({ open, onClose, row, onSave }) => {
     setErrors((prev) => ({ ...prev, [name]: !value.trim() }));
   };
 
+  // 字段
+  const textFields = [
+    { label: "姓名", name: "name", required: true },
+    { label: "邮箱", name: "email", required: true },
+    { label: "职位", name: "title", required: true },
+  ];
+
   return (
     // dialog设计 标题+内容+操作
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>编辑用户</DialogTitle>
       <DialogContent>
-        <TextField
-          required
-          margin="dense"
-          label="姓名"
-          name="name"
-          value={form.name || ""}
-          onChange={handleChange}
-          error={errors.name}
-          helperText={errors.name ? "姓名不能为空" : ""}
-          fullWidth
-        />
-        <TextField
-          required
-          margin="dense"
-          label="邮箱"
-          name="email"
-          value={form.email || ""}
-          onChange={handleChange}
-          error={errors.email}
-          helperText={errors.email ? "邮箱不能为空" : ""}
-          fullWidth
-        />
-        <TextField
-          margin="dense"
-          label="职位"
-          name="title"
-          value={form.title || ""}
-          onChange={handleChange}
-          fullWidth
-        />
+        {textFields.map((field) => (
+          <TextField
+            key={field.name}
+            required={field.required}
+            margin="dense"
+            label={field.label}
+            name={field.name}
+            value={form[field.name] || ""}
+            onChange={handleChange}
+            error={errors[field.name]}
+            helperText={errors[field.name] ? `${field.label}不能为空` : ""}
+            fullWidth
+          />
+        ))}
         <TextField
           required
           select

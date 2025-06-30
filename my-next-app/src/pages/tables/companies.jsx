@@ -73,24 +73,68 @@ const ActionMenu = ({ row, startRowEdit, handleRowDelete }) => {
     </>
   );
 };
+// 编辑Dialog组件
+const EditDialog = ({ open, onClose, row, onSave }) => {
+  // 建立form
+  const [form, setForm] = useState({});
+  const [errors, setErrors] = useState({});
 
+  // 自动更新form
+  useEffect(() => {
+    if (row) setForm(row);
+    setErrors({});
+  }, [row]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: !value.trim() }));
+  };
+
+  // 字段
+  const textFields = [
+    { label: "公司名", name: "company_name", required: true },
+    { label: "等级", name: "level", required: true },
+    { label: "国家", name: "country", required: true },
+    { label: "城市", name: "city", required: true },
+    { label: "创始日期", name: "founded_year", required: true },
+    { label: "年盈利额", name: "annual_revenue", required: true },
+    { label: "员工数量", name: "employees", required: true },
+  ];
+
+  return (
+    // dialog设计 标题+内容+操作
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>编辑用户</DialogTitle>
+      <DialogContent>
+        {textFields.map((field) => (
+          <TextField
+            key={field.name}
+            required={field.required}
+            margin="dense"
+            label={field.label}
+            name={field.name}
+            value={form[field.name] || ""}
+            onChange={handleChange}
+            error={errors[field.name]}
+            helperText={errors[field.name] ? `${field.label}不能为空` : ""}
+            fullWidth
+          />
+        ))}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>取消</Button>
+        <Button
+          onClick={() => onSave(form)}
+          disabled={Object.values(errors).some((v) => v)}
+        >
+          保存
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
 export default function CompaniesTable() {
-  const startRowEdit = (row) => {
-    setEditingRow(row);
-    setEditOpen(true);
-  };
-
-  const handleDelete = async (row) => {
-    try {
-      setRows((prev) =>
-        prev.filter((r) => r.company_code !== row.company_code)
-      );
-    } catch (e) {
-      alert(e);
-    }
-    setFetched(false);
-  };
-
   // 列表标题
   const columns = [
     // 额外列
@@ -186,7 +230,8 @@ export default function CompaniesTable() {
               }}
             >
               <Typography variant="caption" fontSize={14}>
-                年盈利额：{params.row.annual_revenue}
+                年盈利额：
+                {params.row.annual_revenue}
               </Typography>
             </Box>
           );
@@ -270,12 +315,13 @@ export default function CompaniesTable() {
   // useEffect获取数据
   useEffect(() => {
     const fetchCompaniesRows = async () => {
-      // console.log(fetched);
+      // console.log("fetched");
       try {
         const res = await request.get("company/findAll");
         if (res.code === "200") {
           // console.log(res);
           setRows(res.data);
+          setFetched(true);
         }
       } catch (e) {
         alert(e);
@@ -283,6 +329,44 @@ export default function CompaniesTable() {
     };
     if (!fetched) fetchCompaniesRows();
   }, [fetched]);
+
+  const startRowEdit = (row) => {
+    setEditingRow(row);
+    setEditOpen(true);
+  };
+
+  const handleDelete = async (row) => {
+    try {
+      const delRes = await request.delete(
+        "company/deleteOne?company_code=" + row.company_code
+      );
+      if (delRes.code === "200") {
+        setRows((prev) =>
+          prev.filter((r) => r.company_code !== row.company_code)
+        );
+      }
+    } catch (e) {
+      alert(e);
+    }
+    setFetched(false);
+  };
+
+  const handleSave = async (updatedRow) => {
+    try {
+      const saveRes = await request.patch("company/updateOne", updatedRow);
+      if (saveRes === "200") {
+        setRows((prev) => {
+          return prev.map((r) =>
+            r.company_code === updatedRow.company_code ? updatedRow : r
+          );
+        });
+      }
+    } catch (e) {
+      alert(e);
+    }
+    setFetched(false);
+    setEditOpen(false);
+  };
 
   // 控制dialog
   const [editOpen, setEditOpen] = useState(false);
@@ -336,6 +420,12 @@ export default function CompaniesTable() {
                 visibility: "hidden",
               },
           }}
+        />
+        <EditDialog
+          open={editOpen}
+          onClose={() => setEditOpen(false)}
+          row={editingRow}
+          onSave={handleSave}
         />
       </Paper>
     </Box>
