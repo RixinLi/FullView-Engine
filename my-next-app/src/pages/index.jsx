@@ -13,6 +13,7 @@ import {
   Paper,
   Collapse,
   Grid,
+  Input,
 } from "@mui/material";
 import InboxIcon from "@mui/icons-material/Inbox";
 import MailIcon from "@mui/icons-material/Mail";
@@ -27,6 +28,8 @@ import "../css/dashboard.css";
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import path from "path";
+import Inputs from "../utils/inputs";
+import SearchInput from "../utils/inputs";
 const drawerWidth = 240;
 
 //设计单个list里面的collapse
@@ -67,6 +70,12 @@ const CollapseSection = ({ title, Icon, children }) => {
 };
 
 export default function DashboardLayout({ children }) {
+  // header ToolBar的状态变更
+  const [searchText, setSearchText] = useState("");
+  const handleSearchSubmit = () => {
+    alert("Current search: " + searchText);
+  };
+
   return (
     <Box sx={{ width: "100vw", height: "100vh", display: "flex" }}>
       <Drawer
@@ -116,18 +125,20 @@ export default function DashboardLayout({ children }) {
         </Paper>
       </Drawer>
       <Box sx={{ width: "100%" }}>
-        <Grid
-          container
-          spacing={2}
+        <Toolbar
           sx={{
+            display: "flex",
             height: "10%",
             alignItems: "center",
             borderBottom: "1px solid #ccc",
           }}
         >
-          <Grid size={8}>hello</Grid>
-          <Grid size={4}> world</Grid>
-        </Grid>
+          <SearchInput
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            onSubmit={handleSearchSubmit}
+          />
+        </Toolbar>
         {/* 此处为根据按钮点击的页面跳转 并防止在此处作为子组件页面 */}
         {children}
       </Box>
