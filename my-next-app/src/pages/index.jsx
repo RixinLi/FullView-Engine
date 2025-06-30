@@ -14,6 +14,7 @@ import {
   Collapse,
   Grid,
   Input,
+  Tooltip,
 } from "@mui/material";
 import InboxIcon from "@mui/icons-material/Inbox";
 import MailIcon from "@mui/icons-material/Mail";
@@ -30,6 +31,8 @@ import { Outlet } from "react-router-dom";
 import path from "path";
 import Inputs from "../utils/inputs";
 import SearchInput from "../utils/inputs";
+import MessageIcon from "@mui/icons-material/Message";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 const drawerWidth = 240;
 
 //设计单个list里面的collapse
@@ -133,11 +136,28 @@ export default function DashboardLayout({ children }) {
             borderBottom: "1px solid #ccc",
           }}
         >
-          <SearchInput
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            onSubmit={handleSearchSubmit}
-          />
+          <Grid sx={{ width: "20%" }}>
+            <SearchInput
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              onSubmit={handleSearchSubmit}
+            />
+          </Grid>
+          <Grid sx={{ flexGrow: 1, width: "100%" }}></Grid>
+          <Grid sx={{ width: "20%" }}>
+            <Tooltip title="Messages">
+              <Button>
+                <MessageIcon />
+              </Button>
+            </Tooltip>
+            <Tooltip title="Notifications">
+              <Button>
+                <NotificationsIcon />
+              </Button>
+            </Tooltip>
+
+            <Button></Button>
+          </Grid>
         </Toolbar>
         {/* 此处为根据按钮点击的页面跳转 并防止在此处作为子组件页面 */}
         {children}
