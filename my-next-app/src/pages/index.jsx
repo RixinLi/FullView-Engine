@@ -3,36 +3,30 @@ import {
   Box,
   Drawer,
   Toolbar,
-  Divider,
   List,
   ListItem,
-  ListItemIcon,
   ListItemButton,
-  ListItemText,
   Button,
   Paper,
   Collapse,
   Grid,
-  Input,
   Tooltip,
+  Avatar,
+  Menu,
+  MenuItem,
 } from "@mui/material";
-import InboxIcon from "@mui/icons-material/Inbox";
-import MailIcon from "@mui/icons-material/Mail";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import PagesIcon from "@mui/icons-material/Pages";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import SecurityIcon from "@mui/icons-material/Security";
 import NextLink from "next/link";
 import "../css/dashboard.css";
-import { useState } from "react";
-import { Outlet } from "react-router-dom";
-import path from "path";
-import Inputs from "../utils/inputs";
+import { useState, useEffect } from "react";
 import SearchInput from "../utils/inputs";
 import MessageIcon from "@mui/icons-material/Message";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import request from "../utils/request";
 const drawerWidth = 240;
 
 //设计单个list里面的collapse
@@ -73,11 +67,76 @@ const CollapseSection = ({ title, Icon, children }) => {
 };
 
 export default function DashboardLayout({ children }) {
-  // header ToolBar的状态变更
+  // header ToolBar searchText的状态变更
   const [searchText, setSearchText] = useState("");
   const handleSearchSubmit = () => {
     alert("Current search: " + searchText);
   };
+
+  function ToolBarUserMenu({ avatar }) {
+    // 经典的anchor组合 负责操控额外的menu组件
+    const [anchorEl, setAnchorEl] = useState(null);
+    const open = Boolean(anchorEl);
+    const handleClick = (e) => {
+      setAnchorEl(e.currentTarget);
+    };
+    const handleClose = () => {
+      setAnchorEl(null);
+    };
+    return (
+      <>
+        <Button onClick={handleClick}>
+          {avatar && <Avatar src={avatar} />}
+        </Button>
+        <Menu
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          transformOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <MenuItem onClick={handleClose}>个人中心</MenuItem>
+          <MenuItem onClick={handleClose}>设置</MenuItem>
+          <MenuItem onClick={handleClose}>退出登录</MenuItem>
+        </Menu>
+      </>
+    );
+  }
+  // avatar
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    // 确保是在客户端运行
+    const cachedUser = localStorage.getItem("user");
+    if (cachedUser) {
+      setUser(JSON.parse(cachedUser));
+    }
+  }, []);
+  const [avatar, setAvatar] = useState(null);
+  useEffect(() => {
+    const fetctAvatar = async () => {
+      try {
+        // 获取对应avatar二进制文件
+        const res = await request.get(
+          `file/MinioDownloadByQuery/?filename=${user.avatar}`,
+          { responseType: "blob" }
+        );
+
+        // 创建Blob URL预览图像
+        const file = new File([res], user.avatar, { type: res.type });
+
+        // 用FileReader生成base64预览
+        const reader = new FileReader();
+        reader.onloadend = () => setAvatar(reader.result);
+        reader.readAsDataURL(file);
+      } catch (e) {
+        console.log(e);
+      }
+    };
+
+    if (user?.avatar) {
+      fetctAvatar();
+    }
+  }, [user?.avatar]);
 
   return (
     <Box sx={{ width: "100vw", height: "100vh", display: "flex" }}>
@@ -134,6 +193,7 @@ export default function DashboardLayout({ children }) {
             height: "10%",
             alignItems: "center",
             borderBottom: "1px solid #ccc",
+            overflow: "hidden",
           }}
         >
           <Grid sx={{ width: "20%" }}>
@@ -143,7 +203,7 @@ export default function DashboardLayout({ children }) {
               onSubmit={handleSearchSubmit}
             />
           </Grid>
-          <Grid sx={{ flexGrow: 1, width: "100%" }}></Grid>
+          <Grid sx={{ flexGrow: 1, minWidth: 0 }}></Grid>
           <Grid sx={{ width: "20%" }}>
             <Tooltip title="Messages">
               <Button>
@@ -155,8 +215,9 @@ export default function DashboardLayout({ children }) {
                 <NotificationsIcon />
               </Button>
             </Tooltip>
-
-            <Button></Button>
+            <Tooltip title="Account">
+              <ToolBarUserMenu avatar={avatar} />
+            </Tooltip>
           </Grid>
         </Toolbar>
         {/* 此处为根据按钮点击的页面跳转 并防止在此处作为子组件页面 */}

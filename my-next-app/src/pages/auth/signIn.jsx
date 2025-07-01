@@ -66,7 +66,7 @@ export default function SignIn() {
     if (user?.avatar) {
       fetctAvatar();
     }
-  }, [user]);
+  }, [user?.avatar]);
 
   // 默认开启
 
