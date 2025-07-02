@@ -1,8 +1,11 @@
 html,
 body,
 #__next {
-  height: 100%;
-  display: flex;
+  width: 100vw;
+  /* height: calc(var(--vh, 1vh) * 100); !important */
+  height: 100vh !important;
+  margin: 0;
+  padding: 0;
 }
 
 .css_leftBox {
@@ -12,7 +15,8 @@ body,
 }
 
 .css_leftPaper {
-  color: rgba(0, 0, 0, 0.87);
+  background-color: rgb(35, 48, 68) !important;
+  height: calc(var(--vh, 1vh) * 100);
 }
 
 .css_navHeader {

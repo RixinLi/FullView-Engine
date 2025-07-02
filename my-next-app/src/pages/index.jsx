@@ -78,7 +78,7 @@ const CollapseSection = ({ title, Icon, children, drawerToggle }) => {
 
 export default function DashboardLayout({ children }) {
   // smDown 获取
-  const { smDown } = useResponsive();
+  const { smDown, shortHeight } = useResponsive();
 
   // Drawer特性随smDown改变
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -159,7 +159,13 @@ export default function DashboardLayout({ children }) {
   }, [user?.avatar]);
 
   return (
-    <Box sx={{ width: "100vw", height: "100vh", display: "flex" }}>
+    <Box
+      sx={{
+        width: "100%",
+        display: "flex",
+        height: "calc(var(--vh, 1vh) * 100)", // 真正填满可视高度
+      }}
+    >
       <Drawer
         variant={smDown ? "temporary" : "permanent"}
         anchor="left"
@@ -167,10 +173,11 @@ export default function DashboardLayout({ children }) {
         onClose={drawerToggle}
         ModalProps={{ keepMounted: true }}
         sx={{
-          width: drawerWidth,
           flexShrink: 0,
           "& .MuiDrawer-paper": {
+            position: smDown ? "fixed" : "relative",
             width: drawerWidth,
+            height: "calc(var(--vh, 1vh) * 100)",
             boxSizing: "border-box",
             overflowY: "auto",
             scrollbarWidth: "none", // Firefox
@@ -224,8 +231,7 @@ export default function DashboardLayout({ children }) {
           </List>
         </Paper>
       </Drawer>
-
-      <Box sx={{ width: "100%" }}>
+      <Box sx={{ width: "100%", display: "flex", flexDirection: "column" }}>
         <Toolbar
           sx={{
             display: "flex",
@@ -267,7 +273,9 @@ export default function DashboardLayout({ children }) {
           </Grid>
         </Toolbar>
         {/* 此处为根据按钮点击的页面跳转 并防止在此处作为子组件页面 */}
-        {children}
+        <Box sx={{ alignContent: "center", justifyContent: "center", flex: 1 }}>
+          {children}
+        </Box>
       </Box>
     </Box>
   );
