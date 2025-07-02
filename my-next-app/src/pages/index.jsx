@@ -32,7 +32,6 @@ import request from "../utils/request";
 import useResponsive from "../utils/useResponsive";
 
 const drawerWidth = 240;
-const drawerWidthCollapsed = 56;
 
 //设计单个list里面的collapse
 const CollapseSection = ({ title, Icon, children }) => {
@@ -78,6 +77,9 @@ export default function DashboardLayout({ children }) {
   // Drawer特性随smDown改变
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerToggle = () => setDrawerOpen((prev) => !prev);
+  useEffect(() => {
+    if (smDown) setDrawerOpen(false);
+  }, [smDown]);
 
   // header ToolBar searchText的状态变更
   const [searchText, setSearchText] = useState("");
@@ -152,23 +154,23 @@ export default function DashboardLayout({ children }) {
 
   return (
     <Box sx={{ width: "100vw", height: "100vh", display: "flex" }}>
-      {smDown && (
-        <IconButton onClick={drawerToggle} s x={{ m: 1 }}>
-          <MenuIcon />
-        </IconButton>
-      )}
       <Drawer
         variant={smDown ? "temporary" : "permanent"}
         anchor="left"
-        open={smDown ? open : true}
+        open={smDown ? drawerOpen : true}
         onClose={drawerToggle}
         ModalProps={{ keepMounted: true }}
         sx={{
-          width: smDown ? drawerWidthCollapsed : drawerWidth,
+          width: drawerWidth,
           flexShrink: 0,
           "& .MuiDrawer-paper": {
-            width: smDown ? drawerWidthCollapsed : drawerWidth,
+            width: drawerWidth,
             boxSizing: "border-box",
+            overflowY: "auto",
+            scrollbarWidth: "none", // Firefox
+            "&::-webkit-scrollbar": {
+              display: "none", // Chrome & Safari
+            },
           },
         }}
       >
@@ -218,11 +220,18 @@ export default function DashboardLayout({ children }) {
           }}
         >
           <Grid sx={{ width: "20%" }}>
-            <SearchInput
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              onSubmit={handleSearchSubmit}
-            />
+            {smDown && (
+              <IconButton onClick={drawerToggle} s x={{ m: 1 }}>
+                <MenuIcon />
+              </IconButton>
+            )}
+            {!smDown && (
+              <SearchInput
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onSubmit={handleSearchSubmit}
+              />
+            )}
           </Grid>
           <Grid sx={{ flexGrow: 1, minWidth: 0 }}></Grid>
           <Grid sx={{ width: "20%" }}>
