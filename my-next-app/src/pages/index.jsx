@@ -14,6 +14,7 @@ import {
   Avatar,
   Menu,
   MenuItem,
+  IconButton,
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -24,10 +25,14 @@ import NextLink from "next/link";
 import "../css/dashboard.css";
 import { useState, useEffect } from "react";
 import SearchInput from "../utils/inputs";
+import MenuIcon from "@mui/icons-material/Menu";
 import MessageIcon from "@mui/icons-material/Message";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import request from "../utils/request";
+import useResponsive from "../utils/useResponsive";
+
 const drawerWidth = 240;
+const drawerWidthCollapsed = 56;
 
 //设计单个list里面的collapse
 const CollapseSection = ({ title, Icon, children }) => {
@@ -67,6 +72,13 @@ const CollapseSection = ({ title, Icon, children }) => {
 };
 
 export default function DashboardLayout({ children }) {
+  // smDown 获取
+  const { smDown } = useResponsive();
+
+  // Drawer特性随smDown改变
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const drawerToggle = () => setDrawerOpen((prev) => !prev);
+
   // header ToolBar searchText的状态变更
   const [searchText, setSearchText] = useState("");
   const handleSearchSubmit = () => {
@@ -140,17 +152,25 @@ export default function DashboardLayout({ children }) {
 
   return (
     <Box sx={{ width: "100vw", height: "100vh", display: "flex" }}>
+      {smDown && (
+        <IconButton onClick={drawerToggle} s x={{ m: 1 }}>
+          <MenuIcon />
+        </IconButton>
+      )}
       <Drawer
+        variant={smDown ? "temporary" : "permanent"}
+        anchor="left"
+        open={smDown ? open : true}
+        onClose={drawerToggle}
+        ModalProps={{ keepMounted: true }}
         sx={{
-          width: drawerWidth,
+          width: smDown ? drawerWidthCollapsed : drawerWidth,
           flexShrink: 0,
           "& .MuiDrawer-paper": {
-            width: drawerWidth,
+            width: smDown ? drawerWidthCollapsed : drawerWidth,
             boxSizing: "border-box",
           },
         }}
-        variant="permanent"
-        anchor="left"
       >
         <Paper className="css_leftPaper">
           <ListItemButton
@@ -186,6 +206,7 @@ export default function DashboardLayout({ children }) {
           </List>
         </Paper>
       </Drawer>
+
       <Box sx={{ width: "100%" }}>
         <Toolbar
           sx={{
