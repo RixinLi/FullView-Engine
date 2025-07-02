@@ -34,7 +34,9 @@ import useResponsive from "../utils/useResponsive";
 const drawerWidth = 240;
 
 //设计单个list里面的collapse
-const CollapseSection = ({ title, Icon, children }) => {
+const CollapseSection = ({ title, Icon, children, drawerToggle }) => {
+  // smDown 获取
+  const { smDown } = useResponsive();
   const [open, setOpen] = useState(false);
   return (
     <Box sx={{ mb: 2 }}>
@@ -56,6 +58,10 @@ const CollapseSection = ({ title, Icon, children }) => {
                   href={path}
                   sx={{
                     p: "8px 16px 8px 48px", // 上右下左
+                  }}
+                  onClick={() => {
+                    if (smDown && typeof drawerToggle === "function")
+                      drawerToggle();
                   }}
                 >
                   <Typography className="css_navListChildrenButtonTypo">
@@ -192,15 +198,25 @@ export default function DashboardLayout({ children }) {
               <CollapseSection
                 title={"Auth"}
                 Icon={SecurityIcon}
-                children={[{ label: "Sign In", path: "/auth/signIn" }]}
+                children={[
+                  {
+                    label: "Sign In",
+                    path: "/auth/signIn",
+                  },
+                ]}
+                drawerToggle={drawerToggle}
               />
               <CollapseSection
                 title={"Tables"}
                 Icon={TableChartIcon}
                 children={[
                   { label: "User", path: "/tables/user" },
-                  { label: "Companies", path: "/tables/companies" },
+                  {
+                    label: "Companies",
+                    path: "/tables/companies",
+                  },
                 ]}
+                drawerToggle={drawerToggle}
               />
             </div>
             <div></div>
@@ -221,7 +237,7 @@ export default function DashboardLayout({ children }) {
         >
           <Grid sx={{ width: "20%" }}>
             {smDown && (
-              <IconButton onClick={drawerToggle} s x={{ m: 1 }}>
+              <IconButton onClick={drawerToggle} sx={{ m: 1 }}>
                 <MenuIcon />
               </IconButton>
             )}
