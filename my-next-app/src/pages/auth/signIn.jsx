@@ -14,7 +14,7 @@ import { useForm } from "react-hook-form";
 import request from "../../utils/request";
 import DashboardLayout from "..";
 
-function HeaderSVG() {
+export function HeaderSVG() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

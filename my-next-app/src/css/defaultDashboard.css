@@ -1,0 +1,37 @@
+.css_container {
+  width: 100%;
+  margin-left: auto;
+  box-sizing: border-box;
+  margin-right: auto;
+  padding-left: 8px;
+  padding-right: 8px;
+  height: 100%;
+}
+
+.css_typoH3 {
+  margin: 0px 0px 0.35em;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.25;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
+}
+
+.css_typoH6 {
+  margin: 0px;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
+  font-weight: 400;
+  font-size: 0.928571rem;
+  line-height: 1.75;
+}
+
+.css_divider {
+  margin: 24px 0px;
+  flex-shrink: 0;
+  border-width: 0px 0px thin;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.12);
+}

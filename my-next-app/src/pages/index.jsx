@@ -15,6 +15,7 @@ import {
   Menu,
   MenuItem,
   IconButton,
+  Divider,
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -30,6 +31,7 @@ import MessageIcon from "@mui/icons-material/Message";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import request from "../utils/request";
 import useResponsive from "../utils/useResponsive";
+import { HeaderSVG } from "./auth/signIn";
 
 const drawerWidth = 240;
 
@@ -192,16 +194,27 @@ export default function DashboardLayout({ children }) {
             className="css_navHeader"
             component={NextLink}
             href={"/"}
+            sx={{ height: "auto", maxHeight: "64px", marginBottom: 2 }}
           >
-            <DashboardIcon />
-            <Typography textAlign={"center"} sx={{ marginLeft: 2 }}>
-              DashBoard
+            <HeaderSVG />
+            <Typography sx={{ marginLeft: 2, fontSize: 20, fontWeight: 50 }}>
+              Navgation
             </Typography>
           </ListItemButton>
+          <Divider></Divider>
           <List className="css_navList">
             <div>
-              <Typography className="css_navListHeader">PAGES</Typography>
-
+              <CollapseSection
+                title={"Dashbaord"}
+                Icon={DashboardIcon}
+                children={[
+                  {
+                    label: "default",
+                    path: "/dashboard/default",
+                  },
+                ]}
+                drawerToggle={drawerToggle}
+              />
               <CollapseSection
                 title={"Auth"}
                 Icon={SecurityIcon}
@@ -296,16 +309,14 @@ export default function DashboardLayout({ children }) {
           </Grid>
         </Toolbar>
         {/* 此处为根据按钮点击的页面跳转 并防止在此处作为子组件页面 */}
-        <Box
+        <Paper
+          className="css_childrenPageStyle"
           sx={{
-            alignContent: "center",
-            justifyContent: "center",
-            alignItems: "center",
             flex: 1,
           }}
         >
           {children}
-        </Box>
+        </Paper>
       </Box>
     </Box>
   );
