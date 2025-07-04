@@ -162,6 +162,7 @@ export default function DashboardLayout({ children }) {
     <Box
       sx={{
         display: "flex",
+        width: "100vw",
         height: "calc(var(--vh, 1vh) * 100)", // 真正填满可视高度
       }}
     >
@@ -299,6 +300,8 @@ export default function DashboardLayout({ children }) {
           sx={{
             alignContent: "center",
             justifyContent: "center",
+            alignItems: "center",
+            flex: 1,
           }}
         >
           {children}

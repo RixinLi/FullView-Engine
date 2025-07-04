@@ -104,7 +104,7 @@ const EditDialog = ({ open, onClose, row, onSave }) => {
   return (
     // dialog设计 标题+内容+操作
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>编辑用户</DialogTitle>
+      <DialogTitle>编辑公司</DialogTitle>
       <DialogContent>
         {textFields.map((field) => (
           <TextField
