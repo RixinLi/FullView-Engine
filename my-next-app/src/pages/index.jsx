@@ -161,7 +161,6 @@ export default function DashboardLayout({ children }) {
   return (
     <Box
       sx={{
-        width: "100%",
         display: "flex",
         height: "calc(var(--vh, 1vh) * 100)", // 真正填满可视高度
       }}
@@ -231,14 +230,26 @@ export default function DashboardLayout({ children }) {
           </List>
         </Paper>
       </Drawer>
-      <Box sx={{ width: "100%", display: "flex", flexDirection: "column" }}>
+      <Box
+        sx={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          height: "auto",
+          overflow: "visible",
+        }}
+      >
         <Toolbar
+          disableGutters
           sx={{
             display: "flex",
-            height: "10%",
+            flexWrap: "wrap",
             alignItems: "center",
+            px: 1.5,
             borderBottom: "1px solid #ccc",
-            overflow: "hidden",
+            minHeight: 0,
+            height: "auto",
+            overflow: "visible",
           }}
         >
           <Grid sx={{ width: "20%" }}>
@@ -255,8 +266,19 @@ export default function DashboardLayout({ children }) {
               />
             )}
           </Grid>
-          <Grid sx={{ flexGrow: 1, minWidth: 0 }}></Grid>
-          <Grid sx={{ width: "20%" }}>
+          <Grid sx={{ flexGrow: 1, minWidth: 64 }}></Grid>
+          <Grid
+            container
+            spacing={1}
+            wrap="wrap"
+            sx={{
+              flexShrink: 0,
+              justifyContent: "flex-end",
+              "& button": {
+                minWidth: 48,
+              },
+            }}
+          >
             <Tooltip title="Messages">
               <Button>
                 <MessageIcon />
@@ -273,7 +295,12 @@ export default function DashboardLayout({ children }) {
           </Grid>
         </Toolbar>
         {/* 此处为根据按钮点击的页面跳转 并防止在此处作为子组件页面 */}
-        <Box sx={{ alignContent: "center", justifyContent: "center", flex: 1 }}>
+        <Box
+          sx={{
+            alignContent: "center",
+            justifyContent: "center",
+          }}
+        >
           {children}
         </Box>
       </Box>
