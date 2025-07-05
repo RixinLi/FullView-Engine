@@ -1,148 +1,150 @@
 body,
 #__next {
   /* height: calc(var(--vh, 1vh) * 100); !important */
-  height: 100%;
-  width: 100%;
-  margin: 0px;
-  color: rgba(0, 0, 0, 0.87);
-  font-size: 13px;
+  height: 100% !important;
+  width: 100% !important;
+  margin: 0px !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+  font-size: 13px !important;
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol";
-  font-weight: 400;
-  line-height: 1.5;
+    "Segoe UI Symbol" !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
   /* background-color: rgb(247, 249, 252); */
 }
 
 .css_topContainer {
-  width: 100%;
-  margin-left: auto;
-  box-sizing: border-box;
-  margin-right: auto;
-  padding-left: 8px;
-  padding-right: 8px;
-  height: 100%;
+  width: 100% !important;
+  margin-left: auto !important;
+  box-sizing: border-box !important;
+  margin-right: auto !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  height: 100% !important;
 }
 
-.css_cardsGridContainer {
-  --Grid-columns: 12;
-  --Grid-columnSpacing: 24px;
-  --Grid-rowSpacing: 24px;
-  flex-flow: wrap;
-  min-width: 0px;
-  box-sizing: border-box;
-  display: flex;
-  gap: var(--Grid-rowSpacing) var(--Grid-columnSpacing);
+.css_cardsAllGridsContainer {
+  flex-flow: wrap !important;
+  min-width: 0px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+}
+
+.css_cardsGrid {
+  flex-grow: 1;
+  max-width: 400px;
+  min-width: 0px !important;
 }
 
 .css_cardsPaper {
-  background-color: rgb(255, 255, 255);
-  color: rgba(0, 0, 0, 0.87);
+  background-color: rgb(255, 255, 255) !important;
+  color: rgba(0, 0, 0, 0.87) !important;
   box-shadow: rgba(50, 50, 93, 0.024) 0px 2px 5px -1px,
-    rgba(0, 0, 0, 0.05) 0px 1px 3px -1px;
-  background-image: none;
-  position: relative;
-  margin-bottom: 24px;
-  transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-  border-radius: 6px;
+    rgba(0, 0, 0, 0.05) 0px 1px 3px -1px !important;
+  background-image: none !important;
+  position: relative !important;
+  margin-bottom: 24px !important;
+  transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  overflow: hidden !important;
+  border-radius: 6px !important;
 }
 
 .css_cardsContent {
-  padding: 16px;
-  position: relative;
+  padding: 16px !important;
+  position: relative !important;
 }
 
 .css_cardTitle {
-  margin: 0px 0px 16px;
-  font-size: 1rem;
-  font-weight: 500;
-  line-height: 1.25;
+  margin: 0px 0px 16px !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  line-height: 1.25 !important;
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol";
+    "Segoe UI Symbol" !important;
 }
 
 .css_cardNumber {
-  margin: 0px 0px 12px;
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 1.25;
+  margin: 0px 0px 12px !important;
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol";
+    "Segoe UI Symbol" !important;
 }
 
 .css_cardBottom {
-  margin: 0px;
+  margin: 0px !important;
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol";
-  font-weight: 500;
-  font-size: 0.8125rem;
-  line-height: 1.57;
-  color: rgba(0, 0, 0, 0.6);
+    "Segoe UI Symbol" !important;
+  font-weight: 500 !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.57 !important;
+  color: rgba(0, 0, 0, 0.6) !important;
 }
 
 .css_cardChip {
-  max-width: 100%;
+  max-width: 100% !important;
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol";
-  display: inline-flex;
-  -webkit-box-align: center;
-  align-items: center;
-  -webkit-box-pack: center;
-  justify-content: center;
-  cursor: unset;
-  vertical-align: middle;
-  box-sizing: border-box;
-  text-shadow: rgba(0, 0, 0, 0.2) 0px 1px 1px;
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  height: 20px;
-  font-size: 85%;
-  background-color: rgb(71, 130, 218);
-  color: rgb(255, 255, 255);
-  margin-bottom: 16px;
-  white-space: nowrap;
+    "Segoe UI Symbol" !important;
+  display: inline-flex !important;
+  -webkit-box-align: center !important;
+  align-items: center !important;
+  -webkit-box-pack: center !important;
+  justify-content: center !important;
+  cursor: unset !important;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+  text-shadow: rgba(0, 0, 0, 0.2) 0px 1px 1px !important;
+  position: absolute !important;
+  top: 16px !important;
+  right: 16px !important;
+  height: 20px !important;
+  font-size: 85% !important;
+  background-color: rgb(71, 130, 218) !important;
+  color: rgb(255, 255, 255) !important;
+  margin-bottom: 16px !important;
+  white-space: nowrap !important;
   transition: background-color 300ms cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  outline: 0px;
-  text-decoration: none;
-  border-width: 0px;
-  border-style: initial;
-  border-color: initial;
-  border-image: initial;
-  border-radius: 6px;
-  padding: 4px 0px;
+    box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  outline: 0px !important;
+  text-decoration: none !important;
+  border-width: 0px !important;
+  border-style: initial !important;
+  border-color: initial !important;
+  border-image: initial !important;
+  border-radius: 6px !important;
+  padding: 4px 0px !important;
 }
 
 .css_typoH3 {
-  margin: 0px 0px 0.35em;
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 1.25;
+  margin: 0px 0px 0.35em !important;
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol";
+    "Segoe UI Symbol" !important;
 }
 
 .css_typoH6 {
-  margin: 0px;
+  margin: 0px !important;
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol";
-  font-weight: 400;
-  font-size: 0.928571rem;
-  line-height: 1.75;
+    "Segoe UI Symbol" !important;
+  font-weight: 400 !important;
+  font-size: 0.928571rem !important;
+  line-height: 1.75 !important;
 }
 
 .css_divider {
-  margin: 24px 0px;
-  flex-shrink: 0;
-  border-width: 0px 0px thin;
-  border-style: solid;
-  border-color: rgba(0, 0, 0, 0.12);
+  margin: 24px 0px !important;
+  flex-shrink: 0 !important;
+  border-width: 0px 0px thin !important;
+  border-style: solid !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
 }
