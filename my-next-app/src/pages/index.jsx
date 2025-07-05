@@ -117,9 +117,9 @@ export default function DashboardLayout({ children }) {
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
           transformOrigin={{ vertical: "top", horizontal: "right" }}
         >
-          <MenuItem onClick={handleClose}>个人中心</MenuItem>
-          <MenuItem onClick={handleClose}>设置</MenuItem>
-          <MenuItem onClick={handleClose}>退出登录</MenuItem>
+          <MenuItem onClick={handleClose}>Information</MenuItem>
+          <MenuItem onClick={handleClose}>Setting</MenuItem>
+          <MenuItem onClick={handleClose}>Sign Out</MenuItem>
         </Menu>
       </>
     );
