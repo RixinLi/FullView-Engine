@@ -37,6 +37,12 @@ body,
   min-width: 0px !important;
 }
 
+.css_chartGrid {
+  flex-grow: 1;
+  max-width: 600px;
+  min-width: 0px !important;
+}
+
 .css_cardsPaper {
   background-color: rgb(255, 255, 255) !important;
   color: rgba(0, 0, 0, 0.87) !important;
@@ -57,6 +63,15 @@ body,
 
 .css_cardTitle {
   margin: 0px 0px 16px !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  line-height: 1.25 !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol" !important;
+}
+
+.css_cardHeader {
   font-size: 1rem !important;
   font-weight: 500 !important;
   line-height: 1.25 !important;

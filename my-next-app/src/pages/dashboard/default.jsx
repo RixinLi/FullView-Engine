@@ -6,13 +6,23 @@ import {
   Card,
   Paper,
   CardContent,
+  CardHeader,
   Box,
   Chip,
+  IconButton,
 } from "@mui/material";
 import DashboardLayout from "..";
 import { useState, useEffect } from "react";
 import "../../css/defaultDashboard.css";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import MenuIcon from "@mui/icons-material/Menu";
 import request from "../../utils/request";
+
+import dynamic from "next/dynamic";
+
+const LinearChart = dynamic(() => import("../../components/LinearChart"), {
+  ssr: false,
+});
 
 function InfoCard({ title, percentage, number, chipContent }) {
   return (
@@ -152,6 +162,33 @@ export default function DefaultDashboard() {
             percentage={"+26%"}
             chipContent={"today"}
           />
+        </Grid>
+      </Grid>
+      <Divider className="css_divider"></Divider>
+      <Grid
+        container
+        spacing={3} // 等价于 24px 间距
+        direction="row"
+        alignItems="stretch"
+        className="css_cardsAllGridsContainer"
+      >
+        <Grid className="css_chartGrid">
+          <Card>
+            <CardHeader
+              title="Total revenue"
+              titleTypographyProps={{
+                className: "css_cardHeader",
+              }}
+              action={
+                <IconButton aria-label="settings">
+                  <MoreVertIcon />
+                </IconButton>
+              }
+            />
+            <CardContent>
+              <LinearChart data={[3, 4, 6, 7, 8, 3, 9]} />
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
     </Container>
