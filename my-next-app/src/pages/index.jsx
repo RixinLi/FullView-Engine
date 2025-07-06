@@ -309,14 +309,16 @@ export default function DashboardLayout({ children }) {
           </Grid>
         </Toolbar>
         {/* 此处为根据按钮点击的页面跳转 并防止在此处作为子组件页面 */}
-        <Paper
-          className="css_childrenPageStyle"
-          sx={{
-            flex: 1,
-          }}
-        >
-          {children}
-        </Paper>
+        <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
+          <Paper
+            className="css_childrenPageStyle"
+            sx={{
+              flex: 1,
+            }}
+          >
+            {children}
+          </Paper>
+        </Box>
       </Box>
     </Box>
   );

@@ -1,10 +1,14 @@
 import dynamic from "next/dynamic";
 import { Box } from "@mui/material";
 import { useMemo } from "react";
+import { useRef, useEffect, useState, useLayoutEffect } from "react";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
-export default function CumulativeCompaniesChart({ companies = [] }) {
+export default function CumulativeCompaniesChart({
+  companies = [],
+  height = 400,
+}) {
   // 构建[年->新增数]映射
   // 1) companies 未定义 或 不是数组，直接返回一个占位
   if (!Array.isArray(companies) || companies.length === 0) {
@@ -34,66 +38,87 @@ export default function CumulativeCompaniesChart({ companies = [] }) {
 
   // 3. 构建 options & series
   const series = useMemo(
-    () => [{ name: "累计公司数", data: cumulative }],
+    () => [{ name: "accumulated companies", data: cumulative }],
     [cumulative]
   );
+
+  // 1. 生成 discrete 数组
+  const discreteMarkers = [];
+  for (let i = 0; i < cumulative.length; i += 10) {
+    discreteMarkers.push({
+      seriesIndex: 0,
+      dataPointIndex: i,
+      fillColor: "#6366F1",
+      strokeColor: "#fff",
+      size: 6,
+    });
+  }
+
+  // 可选：末尾保证一个 marker
+  const lastIdx = cumulative.length - 1;
+  if (lastIdx % 10 !== 0) {
+    discreteMarkers.push({
+      seriesIndex: 0,
+      dataPointIndex: lastIdx,
+      fillColor: "#6366F1",
+      strokeColor: "#fff",
+      size: 6,
+    });
+  }
 
   const options = useMemo(
     () => ({
       chart: {
         id: "total-companies",
+        type: "line",
+        offsetX: 0,
         toolbar: { show: false },
-        animations: { easing: "easeinout", speed: 800 },
-        events: {
-          click: (_e, _ctx, { dataPointIndex }) => {
-            const y = years[dataPointIndex];
-            const c = cumulative[dataPointIndex];
-            alert(`年份 ${y} 累计 ${c} 家公司`);
-          },
-        },
+        animations: { easing: "easeinout", speed: 600 },
+        // events: {
+        //   click: (_e, _ctx, { dataPointIndex }) => {
+        //     const y = years[dataPointIndex];
+        //     const c = cumulative[dataPointIndex];
+        //     alert(`year ${y} accumulate ${c} companies`);
+        //   },
+        // },
       },
       xaxis: {
         categories: years,
-        title: { text: "year" },
         tickPlacement: "on",
-        tickAmount: 20,
+        tickAmount: 12,
+        // min: 0,
+        // max: cumulative.length - 1,
       },
       yaxis: {
         labels: { formatter: (v) => v.toLocaleString() },
-        title: { text: "Total Companies" },
       },
       // stroke: { curve: "smooth", width: 2 },
       grid: {
         borderColor: "#eee",
         row: { colors: ["#f9f9f9", "transparent"] },
       },
-      tooltip: { theme: "dark", y: { formatter: (v) => `${v} 家` } },
+      tooltip: { theme: "dark", y: { formatter: (v) => `${v}` } },
       markers: {
         size: 0,
         hover: { sizeOffset: 4 },
-        discrete: [
-          {
-            seriesIndex: 0,
-            dataPointIndex: cumulative.length - 1,
-            fillColor: "#6366F1",
-            strokeColor: "#fff",
-            size: 6,
-          },
-        ],
+        discrete: discreteMarkers,
       },
-      // responsive: [
-      //   {
-      //     breakpoint: 600,
-      //     options: { markers: { size: 3 } },
-      //   },
-      // ],
     }),
     [years, cumulative]
   );
 
   return (
     // 使用box做限制
-    <Box sx={{ height: 400 }}>
+    <Box
+      sx={{
+        flex: 1,
+        height: height,
+        "& .apexcharts-canvas": {
+          width: "100% !important",
+          maxWidth: "none !important",
+        },
+      }}
+    >
       {Array.isArray(companies) && (
         <Chart options={options} series={series} type="line" height="100%" />
       )}

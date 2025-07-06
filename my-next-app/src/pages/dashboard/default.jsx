@@ -185,6 +185,17 @@ export default function DefaultDashboard() {
             </CardContent>
           </Card>
         </Grid>
+
+        <Grid className="css_chartGrid">
+          <Card>
+            <CardHeader
+              title="Company Level"
+              titleTypographyProps={{
+                className: "css_cardHeader",
+              }}
+            />
+          </Card>
+        </Grid>
       </Grid>
     </Container>
   );
