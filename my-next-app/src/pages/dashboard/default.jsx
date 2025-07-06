@@ -17,12 +17,7 @@ import "../../css/defaultDashboard.css";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import MenuIcon from "@mui/icons-material/Menu";
 import request from "../../utils/request";
-
-import dynamic from "next/dynamic";
-
-const LinearChart = dynamic(() => import("../../components/LinearChart"), {
-  ssr: false,
-});
+import CumulativeCompaniesChart from "../../components/CumulativeCompaniesChart";
 
 function InfoCard({ title, percentage, number, chipContent }) {
   return (
@@ -78,7 +73,7 @@ export default function DefaultDashboard() {
       employees: 2867,
     },
   ];
-  const [rows, setRows] = useState(initialRows);
+  const [rows, setRows] = useState([]);
   const [fetched, setFetched] = useState(false);
   useEffect(() => {
     const fetchCompaniesRows = async () => {
@@ -186,7 +181,7 @@ export default function DefaultDashboard() {
               }
             />
             <CardContent>
-              <LinearChart data={[3, 4, 6, 7, 8, 3, 9]} />
+              {rows && <CumulativeCompaniesChart companies={rows} />}
             </CardContent>
           </Card>
         </Grid>
