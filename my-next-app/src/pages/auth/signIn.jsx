@@ -90,8 +90,8 @@ export default function SignIn() {
         console.log("登录成功", res.data);
         localStorage.setItem("user", JSON.stringify(res.data.user));
         localStorage.setItem("token", res.data.access_token);
-        // 登陆后进去update界面
-        window.location.href = "/";
+        // 登陆后进去default界面
+        window.location.href = "/dashboard/default";
       }
     } catch (error) {
       console.error("登录失败:", error);

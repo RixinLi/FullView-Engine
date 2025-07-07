@@ -10,6 +10,11 @@ import {
   Box,
   Chip,
   IconButton,
+  Table,
+  TableHead,
+  TableRow,
+  TableBody,
+  TableCell,
 } from "@mui/material";
 import DashboardLayout from "..";
 import { useState, useEffect } from "react";
@@ -18,6 +23,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import MenuIcon from "@mui/icons-material/Menu";
 import request from "../../utils/request";
 import CumulativeCompaniesChart from "../../components/CumulativeCompaniesChart";
+import CompaniesLevelChart from "../../components/CompaniesLevelChart";
 
 function InfoCard({ title, percentage, number, chipContent }) {
   return (
@@ -92,6 +98,30 @@ export default function DefaultDashboard() {
     if (!fetched) fetchCompaniesRows();
   }, [fetched]);
 
+  const [levelTableRows, setLevelTableRows] = useState([]);
+  useEffect(() => {
+    const map = {};
+    if (rows) {
+      rows.forEach(({ level, annual_revenue, company_name }) => {
+        if (!map[Number(level)]) {
+          map[Number(level)] = {
+            level,
+            number: 1,
+            top_revenue: annual_revenue,
+            top_company: company_name,
+          };
+        } else {
+          map[Number(level)].number += 1;
+          if (annual_revenue > map[Number(level)].top_revenue) {
+            map[Number(level)].top_revenue = annual_revenue;
+            map[Number(level)].top_company = company_name;
+          }
+        }
+      });
+      setLevelTableRows(Object.values(map));
+    }
+  }, [rows]);
+
   return (
     <Container className="css_topContainer">
       <Grid container>
@@ -133,7 +163,7 @@ export default function DefaultDashboard() {
         </Grid>
         <Grid className="css_cardsGrid">
           <InfoCard
-            title={"Countries"}
+            title={"Country"}
             number={new Set(rows.map((row) => row.country)).size}
             percentage={"+26%"}
             chipContent={"history"}
@@ -141,7 +171,7 @@ export default function DefaultDashboard() {
         </Grid>
         <Grid className="css_cardsGrid">
           <InfoCard
-            title={"Cities"}
+            title={"City"}
             number={new Set(rows.map((row) => row.city)).size}
             percentage={"+26%"}
             chipContent={"history"}
@@ -170,7 +200,7 @@ export default function DefaultDashboard() {
         <Grid className="css_chartGrid">
           <Card>
             <CardHeader
-              title="Total revenue"
+              title="Company Number"
               titleTypographyProps={{
                 className: "css_cardHeader",
               }}
@@ -193,7 +223,40 @@ export default function DefaultDashboard() {
               titleTypographyProps={{
                 className: "css_cardHeader",
               }}
+              action={
+                <IconButton aria-label="settings">
+                  <MoreVertIcon />
+                </IconButton>
+              }
             />
+            <CardContent>
+              {rows && <CompaniesLevelChart companies={rows} />}
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Company level</TableCell>
+                    <TableCell align="right">Number</TableCell>
+                    <TableCell align="right">Top Company</TableCell>
+                    <TableCell align="right">Top Revenue</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {levelTableRows.map((row) => (
+                    <TableRow
+                      key={row.level}
+                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                    >
+                      <TableCell component="th" scope="row">
+                        {row.level}
+                      </TableCell>
+                      <TableCell align="right">{row.number}</TableCell>
+                      <TableCell align="right">{row.top_company}</TableCell>
+                      <TableCell align="right">{row.top_revenue}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
           </Card>
         </Grid>
       </Grid>
