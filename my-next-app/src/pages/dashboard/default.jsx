@@ -26,6 +26,15 @@ import CumulativeCompaniesChart from "../../components/CumulativeCompaniesChart"
 import CompaniesLevelChart from "../../components/CompaniesLevelChart";
 
 function InfoCard({ title, percentage, number, chipContent }) {
+  function formatNumber(num) {
+    if (num >= 1e6) {
+      return (num / 1e6).toFixed(1).replace(/\.0$/, "") + "M";
+    }
+    if (num >= 1e3) {
+      return (num / 1e3).toFixed(1).replace(/\.0$/, "") + "K";
+    }
+    return num.toString();
+  }
   return (
     <Card>
       <CardContent className="css_cardsContent">
@@ -33,7 +42,7 @@ function InfoCard({ title, percentage, number, chipContent }) {
           {title}
         </Typography>
         <Typography variant="h3" className="css_cardNumber">
-          <Box sx={{ fontWeight: 400 }}>{number}</Box>
+          <Box sx={{ fontWeight: 400 }}>{formatNumber(number)}</Box>
         </Typography>
         <Typography variant="subtitle2" className="css_cardBottom">
           <span
