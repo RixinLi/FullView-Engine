@@ -7,16 +7,6 @@
       "command": "cd main-server; yarn start"
     },
     {
-      "label": "micro-app-log",
-      "type": "shell",
-      "command": "cd micro-app-log; yarn start"
-    },
-    {
-      "label": "micro-service-calc",
-      "type": "shell",
-      "command": "cd micro-service-calc; yarn start"
-    },
-    {
       "label": "micro-service-minio",
       "type": "shell",
       "command": "cd micro-service-minio; npm run start"

@@ -1,0 +1,9 @@
+.chart-wrapper {
+  width: 100%;
+  /* 高度可按比例，或固定一个 min-height */
+}
+.chart-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}

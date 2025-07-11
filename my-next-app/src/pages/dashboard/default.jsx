@@ -24,6 +24,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import request from "../../utils/request";
 import CumulativeCompaniesChart from "../../components/CumulativeCompaniesChart";
 import CompaniesLevelChart from "../../components/CompaniesLevelChart";
+import FilterCompaniesChart from "../../components/FilterCompaniesChart";
 
 function InfoCard({ title, percentage, number, chipContent }) {
   function formatNumber(num) {
@@ -265,6 +266,33 @@ export default function DefaultDashboard() {
                   ))}
                 </TableBody>
               </Table>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+      <Divider className="css_divider"></Divider>
+      <Grid
+        container
+        spacing={3} // 等价于 24px 间距
+        direction="row"
+        alignItems="stretch"
+        className="css_cardsAllGridsContainer"
+      >
+        <Grid className="css_columnChartGrid">
+          <Card>
+            <CardHeader
+              title="Company Number"
+              titleTypographyProps={{
+                className: "css_cardHeader",
+              }}
+              action={
+                <IconButton aria-label="settings">
+                  <MoreVertIcon />
+                </IconButton>
+              }
+            />
+            <CardContent>
+              <FilterCompaniesChart />
             </CardContent>
           </Card>
         </Grid>

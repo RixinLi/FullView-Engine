@@ -43,6 +43,11 @@ body,
   min-width: 0px !important;
 }
 
+.css_columnChartGrid {
+  flex-grow: 1;
+  min-width: 0px !important;
+}
+
 .css_cardsPaper {
   background-color: rgb(255, 255, 255) !important;
   color: rgba(0, 0, 0, 0.87) !important;
