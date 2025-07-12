@@ -83,10 +83,13 @@ export class CompanyController {
       filteredData = allData.filter((company) => {
         return (
           (!filterDto.filter?.level ||
+            (Array.isArray(filterDto.filter.level) && filterDto.filter.level.length === 0) ||
             (company.level !== undefined && filterDto.filter.level.includes(company.level))) &&
           (!filterDto.filter?.country ||
-            (company.country && filterDto.filter.country.includes(company.country))) &&
+            (Array.isArray(filterDto.filter.country) && filterDto.filter.country.length === 0) ||
+            (company.country !== undefined && filterDto.filter.country.includes(company.country))) &&
           (!filterDto.filter?.city ||
+            (Array.isArray(filterDto.filter.city) && filterDto.filter.city.length === 0) ||
             (company.city !== undefined && filterDto.filter.city.includes(company.city))) &&
           (!filterDto.filter?.founded_year?.start ||
             (company.founded_year !== undefined &&

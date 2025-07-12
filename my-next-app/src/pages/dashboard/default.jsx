@@ -292,7 +292,7 @@ export default function DefaultDashboard() {
               }
             />
             <CardContent>
-              <FilterCompaniesChart />
+              {rows && <FilterCompaniesChart allCompaniesRows={rows} />}
             </CardContent>
           </Card>
         </Grid>
