@@ -1,4 +1,4 @@
-import { IsArray, IsNumber, IsOptional, ValidateNested } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class FoundedYearDto {
@@ -61,9 +61,8 @@ class FilterDto {
 }
 
 export class FilterQueryCompanyDto {
-  @IsArray()
-  @IsOptional()
-  dimension?: string[];
+  @IsString()
+  dimension: string;
 
   @IsOptional()
   @ValidateNested()

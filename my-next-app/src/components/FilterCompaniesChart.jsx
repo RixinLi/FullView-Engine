@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import useResizeObserver from "@react-hook/resize-observer";
 import "../css/filterCompaniesChart.css";
 import * as d3 from "d3";
+import request from "../utils/request";
 
 function ColumnChart({
   data,
@@ -83,7 +84,7 @@ function ColumnChart({
 }
 
 export default function FilterCompaniesChart() {
-  const data = [
+  const dummyData = [
     { category: "A", value: 30 },
     { category: "B", value: 80 },
     { category: "C", value: 45 },
@@ -92,6 +93,55 @@ export default function FilterCompaniesChart() {
     { category: "F", value: 90 },
     { category: "G", value: 50 },
   ];
+
+  const [data, setData] = useState(dummyData);
+
+  // 在这上面弄一个fileter Bar
+  // 先是dimension
+  const [dimension, setDimension] = useState("country");
+
+  useEffect(() => {
+    const fetchCompaniesRows = async () => {
+      console.log("fetching");
+      try {
+        const res = await request.post("company/findFilter", {
+          dimension: dimension, // 维度：city
+          // filter: { level: [1, 2, 3] }, // 过滤条件
+        });
+        if (res.code === "200") {
+          const rows = res.data.data;
+          console.log(rows);
+          const chartData = Object.entries(rows).map(([category, items]) => ({
+            category,
+            value: items.length,
+          }));
+          setData(chartData);
+        }
+      } catch (e) {
+        alert(e);
+      }
+    };
+    if (dimension) {
+      fetchCompaniesRows();
+    }
+  }, [dimension]);
+
+  // useEffect(() => {
+  //   const fetchCompaniesRows = async () => {
+  //     // console.log("fetched");
+  //     try {
+  //       const res = await request.get("company/findAll");
+  //       if (res.code === "200") {
+  //         // console.log(res);
+  //         setRows(res.data);
+  //         setFetched(true);
+  //       }
+  //     } catch (e) {
+  //       alert(e);
+  //     }
+  //   };
+  //   if (!fetched) fetchCompaniesRows();
+  // }, [fetched]);
 
   return <ColumnChart data={data} />;
 }

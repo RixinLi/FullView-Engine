@@ -53,7 +53,7 @@ export class CompanyController {
   /*
   查询filter
   */
-  @Get('findFilter')
+  @Post('findFilter')
   async findFilterCompanies(@Body() filterDto: FilterQueryCompanyDto) {
     // 取出数据优先filter
 
@@ -67,7 +67,7 @@ export class CompanyController {
 
     // 开始处理信息
     const groupedData = {
-      dimension: filterDto.dimension || [],
+      dimension: filterDto.dimension,
       data: {},
       filter: filterDto.filter, // 稍后实现
     };
@@ -110,22 +110,27 @@ export class CompanyController {
       });
     }
 
-    groupedData.dimension.forEach((dim) => {
-      groupedData.data[dim] = filteredData.reduce((acc, company) => {
-        const key = company[dim]; // 动态字段访问
-        if (acc[dim.toString() + ': ' + key] === undefined) acc[dim.toString() + ': ' + key] = [];
-        acc[dim.toString() + ': ' + key].push(company);
+    // 按照单一维度（如 "country"）分组
+    if (groupedData.dimension && typeof groupedData.dimension === 'string') {
+      // 分组
+      groupedData.data = filteredData.reduce((acc, company) => {
+        const key = company[groupedData.dimension];
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(company);
         return acc;
       }, {});
 
-      // 对子 key 进行字典排序
-      groupedData.data[dim] = Object.keys(groupedData.data[dim])
-        .sort() // 按字母顺序排序
-        .reduce((sortedAcc, key) => {
-          sortedAcc[key] = groupedData.data[dim][key];
-          return sortedAcc;
-        }, {});
-    });
+      // 排序
+      Object.keys(groupedData.data).forEach((key) => {
+        groupedData.data[key].sort((a, b) => {
+          if (a[groupedData.dimension] < b[groupedData.dimension]) return -1;
+          if (a[groupedData.dimension] > b[groupedData.dimension]) return 1;
+          return 0;
+        });
+      });
+    } else {
+      groupedData.data = filteredData;
+    }
 
     return Result.success(groupedData);
   }
