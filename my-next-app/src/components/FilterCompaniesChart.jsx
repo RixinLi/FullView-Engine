@@ -17,6 +17,7 @@ import {
   Typography,
   Slider,
 } from "@mui/material";
+import d3Tip from "d3-tip";
 
 // 直接作图的组件
 function ColumnChart({
@@ -90,6 +91,15 @@ function ColumnChart({
     // Y 轴
     g.append("g").call(d3.axisLeft(y));
 
+    // 1. 初始化tip
+    const tip = d3Tip()
+      .attr("class", "d3-tip")
+      .offset([-5, 0])
+      .html((d) => `<strong>${d.category}</strong>: ${d.value}`);
+
+    // 2. 在 svg 中挂载tip
+    svg.call(tip);
+
     // 柱状图
     g.selectAll(".bar")
       .data(data)
@@ -99,7 +109,14 @@ function ColumnChart({
       .attr("y", (d) => y(d.value))
       .attr("width", x.bandwidth())
       .attr("height", (d) => innerH - y(d.value))
-      .attr("fill", "steelblue");
+      .attr("fill", "steelblue")
+      .on("mouseover", function (event, d) {
+        // 把 datum 和当前元素传给 show
+        tip.show(d, this);
+      })
+      .on("mouseout", function (event, d) {
+        tip.hide(d, this);
+      });
   }, [data, containerWidth, height, margin]);
 
   return (
@@ -234,6 +251,7 @@ export default function FilterCompaniesChart({ allCompaniesRows }) {
   const countrySet = new Set();
   const citySet = new Set();
   const levelSet = new Set();
+
   if (Array.isArray(allCompaniesRows)) {
     allCompaniesRows.forEach((row) => {
       if (row.country) countrySet.add(row.country);
@@ -258,6 +276,8 @@ export default function FilterCompaniesChart({ allCompaniesRows }) {
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
+  // 这里麻烦根据allCompaniesRows来生成
+
   const dummyData = [
     { category: "A", value: 30 },
     { category: "B", value: 80 },
@@ -269,18 +289,59 @@ export default function FilterCompaniesChart({ allCompaniesRows }) {
   // 先是dimension
   // const [dimension, setDimension] = useState("country");
   // 直接整合为requestForm
-  const currentYear = new Date().getFullYear();
-  const [requestForm, setRequestForm] = useState({
-    dimension: "country",
-    filter: {
-      level: [],
-      country: [],
-      city: [],
-      founded_year: { start: 1900, end: currentYear },
-      annual_revenue: { min: 0, max: 100000000 },
-      employees: { min: 0, max: 100000 },
-    },
-  });
+  // 1. 先给 state 设成 null 或半初始化
+  const [requestForm, setRequestForm] = useState(null);
+  const [foundedYearMin, setFoundedYearMin] = useState(0);
+  const [foundedYearMax, setFoundedYearMax] = useState(0);
+  const [annualRevenueMin, setAnnualRevenueMin] = useState(0);
+  const [annualRevenueMax, setAnnualRevenueMax] = useState(0);
+  const [employeesMin, setEmployeesMin] = useState(0);
+  const [employeesMax, setEmployeesMax] = useState(0);
+
+  // 2. 数据变化后，补全 state
+  useEffect(() => {
+    if (!allCompaniesRows?.length) return;
+
+    let aMin = Infinity,
+      aMax = -Infinity;
+    let eMin = Infinity,
+      eMax = -Infinity;
+    let yMin = Infinity,
+      yMax = -Infinity;
+
+    allCompaniesRows.forEach((row) => {
+      aMin = Math.min(aMin, Number(row.annual_revenue));
+      aMax = Math.max(aMax, Number(row.annual_revenue));
+      eMin = Math.min(eMin, row.employees);
+      eMax = Math.max(eMax, row.employees);
+      yMin = Math.min(yMin, row.founded_year);
+      yMax = Math.max(yMax, row.founded_year);
+    });
+
+    // 给一个兜底
+    if (aMin === Infinity) aMin = aMax = 0;
+    if (eMin === Infinity) eMin = eMax = 0;
+    if (yMin === Infinity) yMin = yMax = 0;
+
+    setFoundedYearMin(yMin);
+    setFoundedYearMax(yMax);
+    setAnnualRevenueMin(aMin);
+    setAnnualRevenueMax(aMax);
+    setEmployeesMin(eMin);
+    setEmployeesMax(eMax);
+
+    setRequestForm({
+      dimension: "country",
+      filter: {
+        level: [],
+        country: [],
+        city: [],
+        founded_year: { start: yMin, end: yMax },
+        annual_revenue: { min: aMin, max: aMax },
+        employees: { min: eMin, max: eMax },
+      },
+    });
+  }, [allCompaniesRows]);
 
   // 表单更新
   const handleDimensionChange = (e) =>
@@ -323,12 +384,13 @@ export default function FilterCompaniesChart({ allCompaniesRows }) {
     }
   }, [requestForm]);
 
+  // 3. 渲染时注意 requestForm 可能为 null
+  if (!requestForm) return <div>Loading…</div>;
   // 映射 founded_year 的字段为 min/max
   const foundedYearValue = {
     min: requestForm.filter.founded_year.start,
     max: requestForm.filter.founded_year.end,
   };
-
   return (
     <Box p={2}>
       <Stack direction="row" spacing={2} alignItems="center">
@@ -371,9 +433,12 @@ export default function FilterCompaniesChart({ allCompaniesRows }) {
                 level: [],
                 country: [],
                 city: [],
-                founded_year: { start: 1900, end: currentYear },
-                annual_revenue: { min: 0, max: 100000000 },
-                employees: { min: 0, max: 100000 },
+                founded_year: { start: foundedYearMin, end: foundedYearMax },
+                annual_revenue: {
+                  min: annualRevenueMin,
+                  max: annualRevenueMax,
+                },
+                employees: { min: employeesMin, max: employeesMax },
               },
             }));
           }}
@@ -385,9 +450,9 @@ export default function FilterCompaniesChart({ allCompaniesRows }) {
       <Stack direction="row" spacing={2} alignItems="center">
         <RangeSlider
           label="annual_revenue"
-          min={0}
-          max={10000000}
-          step={10000}
+          min={annualRevenueMin}
+          max={annualRevenueMax}
+          step={1000}
           unit="$"
           value={requestForm.filter.annual_revenue}
           onChange={(newVal) =>
@@ -402,8 +467,8 @@ export default function FilterCompaniesChart({ allCompaniesRows }) {
         />
         <RangeSlider
           label="founded_year"
-          min={1900}
-          max={2025}
+          min={foundedYearMin}
+          max={foundedYearMax}
           step={1}
           unit="year"
           value={foundedYearValue}
@@ -422,8 +487,8 @@ export default function FilterCompaniesChart({ allCompaniesRows }) {
         />
         <RangeSlider
           label="employees"
-          min={0}
-          max={10000}
+          min={employeesMin}
+          max={employeesMax}
           step={100}
           unit="$"
           value={requestForm.filter.employees}
