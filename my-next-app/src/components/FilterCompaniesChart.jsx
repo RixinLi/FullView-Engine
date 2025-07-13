@@ -13,6 +13,9 @@ import {
   MenuItem,
   Autocomplete,
   TextField,
+  Checkbox,
+  Typography,
+  Slider,
 } from "@mui/material";
 
 // 直接作图的组件
@@ -107,7 +110,6 @@ function ColumnChart({
 }
 
 // filter和dimension的组件
-
 // 普通下拉组件
 function SingleSelect({ label, value, options, onChange }) {
   return (
@@ -127,22 +129,87 @@ function SingleSelect({ label, value, options, onChange }) {
 // 多选下拉组件
 function MultiSelect({ label, value, options, onChange }) {
   return (
-    <FormControl sx={{ minWidth: 180 }}>
+    <FormControl sx={{ minWidth: 180, maxWidth: 180 }}>
       <InputLabel>{label}</InputLabel>
       <Select
         multiple
         label={label}
         value={value}
         onChange={onChange}
-        renderValue={(selected) => selected.join(", ")}
+        renderValue={(selected) =>
+          options
+            .filter((opt) => selected.includes(opt.value))
+            .map((opt) => opt.label)
+            .join(", ")
+        }
       >
         {options.map((opt) => (
           <MenuItem key={opt.value} value={opt.value}>
-            {opt.label}
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Checkbox checked={value.indexOf(opt.value) > -1} />
+              {opt.label}
+            </Stack>
           </MenuItem>
         ))}
       </Select>
     </FormControl>
+  );
+}
+
+// slider+输入框用于min,max的输入
+function RangeSlider({
+  label = "范围选择",
+  min = 0,
+  max = 100,
+  step = 1,
+  value,
+  onChange,
+  unit = "", // 可选单位，如 "$" 或 "人"
+}) {
+  const handleSliderChange = (_, newValue) => {
+    onChange({ min: newValue[0], max: newValue[1] });
+  };
+
+  const handleInputChange = (key) => (e) => {
+    const newVal = Number(e.target.value);
+    onChange({
+      min: key === "min" ? newVal : value.min,
+      max: key === "max" ? newVal : value.max,
+    });
+  };
+
+  return (
+    <Box sx={{ p: 2, border: "1px solid #ddd", borderRadius: 2 }}>
+      <Typography variant="subtitle2" gutterBottom sx={{ mb: 2 }}>
+        {label}
+      </Typography>
+
+      <Box display="flex" gap={2} mb={2}>
+        <TextField
+          label={`min ${unit}`}
+          type="number"
+          value={value.min}
+          onChange={handleInputChange("min")}
+          fullWidth
+        />
+        <TextField
+          label={`max ${unit}`}
+          type="number"
+          value={value.max}
+          onChange={handleInputChange("max")}
+          fullWidth
+        />
+      </Box>
+
+      <Slider
+        value={[value.min, value.max]}
+        onChange={handleSliderChange}
+        valueLabelDisplay="auto"
+        min={min}
+        max={max}
+        step={step}
+      />
+    </Box>
   );
 }
 
@@ -202,18 +269,26 @@ export default function FilterCompaniesChart({ allCompaniesRows }) {
   // 先是dimension
   // const [dimension, setDimension] = useState("country");
   // 直接整合为requestForm
-  const [requestForm, setRequestFrom] = useState({
+  const currentYear = new Date().getFullYear();
+  const [requestForm, setRequestForm] = useState({
     dimension: "country",
-    filter: { level: [], country: [], city: [] },
+    filter: {
+      level: [],
+      country: [],
+      city: [],
+      founded_year: { start: 0, end: currentYear },
+      annual_revenue: { min: 0, max: 100000000 },
+      employees: { min: 0, max: 100000 },
+    },
   });
 
   // 表单更新
   const handleDimensionChange = (e) =>
-    setRequestFrom((s) => ({ ...s, dimension: e.target.value }));
+    setRequestForm((s) => ({ ...s, dimension: e.target.value }));
   const handleFilterChange = (field) => (eOrVal) => {
     // 这里的实现存在疑问
     const val = eOrVal?.target?.value ?? eOrVal;
-    setRequestFrom((s) => ({
+    setRequestForm((s) => ({
       ...s,
       filter: { ...s.filter, [field]: val },
     }));
@@ -226,13 +301,18 @@ export default function FilterCompaniesChart({ allCompaniesRows }) {
         const res = await request.post("company/findFilter", requestForm);
         if (res.code === "200") {
           const rows = res.data.data;
-          const chartData = Object.entries(rows)
-            .map(([category, items]) => ({
-              category,
-              value: items.length,
-            }))
-            .sort((a, b) => a.category.localeCompare(b.category));
-          setData(chartData);
+          // 保证 chartData 至少有一个空数据项，避免图表崩溃
+          if (!rows || Object.keys(rows).length === 0) {
+            setData([{ category: "None Data", value: 0 }]);
+          } else {
+            const chartData = Object.entries(rows)
+              .map(([category, items]) => ({
+                category,
+                value: items.length,
+              }))
+              .sort((a, b) => a.category.localeCompare(b.category));
+            setData(chartData);
+          }
         }
       } catch (e) {
         alert(e);
@@ -242,6 +322,12 @@ export default function FilterCompaniesChart({ allCompaniesRows }) {
       fetchCompaniesRows();
     }
   }, [requestForm]);
+
+  // 映射 founded_year 的字段为 min/max
+  const foundedYearValue = {
+    min: requestForm.filter.founded_year.start,
+    max: requestForm.filter.founded_year.end,
+  };
 
   return (
     <Box p={2}>
@@ -279,15 +365,78 @@ export default function FilterCompaniesChart({ allCompaniesRows }) {
         <Button
           variant="contained"
           onClick={() => {
-            /* 可另附手动触发 */
-            setRequestFrom((s) => ({
+            setRequestForm((s) => ({
               dimension: "country",
-              filter: { level: [], country: [], city: [] },
+              filter: {
+                level: [],
+                country: [],
+                city: [],
+                founded_year: { start: 0, end: currentYear },
+                annual_revenue: { min: 0, max: 100000000 },
+                employees: { min: 0, max: 100000 },
+              },
             }));
           }}
         >
           reset
         </Button>
+      </Stack>
+      <Box my={2} /> {/* 添加垂直间距 */}
+      <Stack direction="row" spacing={2} alignItems="center">
+        <RangeSlider
+          label="annual_revenue"
+          min={0}
+          max={10000000}
+          step={10000}
+          unit="$"
+          value={requestForm.filter.annual_revenue}
+          onChange={(newVal) =>
+            setRequestForm((prev) => ({
+              ...prev,
+              filter: {
+                ...prev.filter,
+                annual_revenue: newVal,
+              },
+            }))
+          }
+        />
+        <RangeSlider
+          label="founded_year"
+          min={1900}
+          max={2025}
+          step={1}
+          unit="year"
+          value={foundedYearValue}
+          onChange={(newVal) =>
+            setRequestForm((prev) => ({
+              ...prev,
+              filter: {
+                ...prev.filter,
+                founded_year: {
+                  start: newVal.min,
+                  end: newVal.max,
+                },
+              },
+            }))
+          }
+        />
+        <RangeSlider
+          label="employees"
+          min={0}
+          max={10000}
+          step={100}
+          unit="$"
+          value={requestForm.filter.employees}
+          onChange={(newVal) =>
+            setRequestForm((prev) => ({
+              ...prev,
+              filter: {
+                ...prev.filter,
+                employees: newVal,
+              },
+            }))
+          }
+        />
       </Stack>
       <ColumnChart data={data} />
     </Box>

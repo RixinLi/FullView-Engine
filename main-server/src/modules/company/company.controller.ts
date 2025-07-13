@@ -87,7 +87,8 @@ export class CompanyController {
             (company.level !== undefined && filterDto.filter.level.includes(company.level))) &&
           (!filterDto.filter?.country ||
             (Array.isArray(filterDto.filter.country) && filterDto.filter.country.length === 0) ||
-            (company.country !== undefined && filterDto.filter.country.includes(company.country))) &&
+            (company.country !== undefined &&
+              filterDto.filter.country.includes(company.country))) &&
           (!filterDto.filter?.city ||
             (Array.isArray(filterDto.filter.city) && filterDto.filter.city.length === 0) ||
             (company.city !== undefined && filterDto.filter.city.includes(company.city))) &&
