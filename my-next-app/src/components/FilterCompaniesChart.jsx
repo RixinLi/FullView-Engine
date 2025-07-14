@@ -119,8 +119,19 @@ function ColumnChart({
       });
   }, [data, containerWidth, height, margin]);
 
+  // 让下方的 scroll bar 不遮挡 x 轴标签：给 svg 增加底部 padding/margin
   return (
-    <div ref={wrapperRef} style={{ width: "100%", height, overflowX: "auto" }}>
+    <div
+      ref={wrapperRef}
+      style={{
+        width: "100%",
+        // height: height + 32, // 增加高度让 x 轴标签和滚动条不重叠
+        overflowX: "auto",
+        overflowY: "hidden", // 禁止垂直滚动
+        // paddingBottom: 32, // 给底部留空间，避免滚动条遮挡 x 轴标签
+        boxSizing: "border-box",
+      }}
+    >
       <svg ref={svgRef} />
     </div>
   );
@@ -145,8 +156,14 @@ function SingleSelect({ label, value, options, onChange }) {
 
 // 多选下拉组件
 function MultiSelect({ label, value, options, onChange }) {
+  const [search, setSearch] = useState("");
+  // 过滤 options
+  const filteredOptions = options.filter((opt) =>
+    opt.label.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <FormControl sx={{ minWidth: 180, maxWidth: 180 }}>
+    <FormControl sx={{ minWidth: 180, maxWidth: 240 }}>
       <InputLabel>{label}</InputLabel>
       <Select
         multiple
@@ -159,8 +176,29 @@ function MultiSelect({ label, value, options, onChange }) {
             .map((opt) => opt.label)
             .join(", ")
         }
+        MenuProps={{
+          PaperProps: {
+            style: { maxHeight: 300 },
+          },
+          MenuListProps: {
+            style: { maxHeight: 260, overflowY: "auto" },
+          },
+        }}
       >
-        {options.map((opt) => (
+        {/* 用 Box 放搜索框，不会被视为选项 */}
+        <Box sx={{ px: 2, py: 1 }}>
+          <TextField
+            placeholder={`search ${label}`}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            size="small"
+            fullWidth
+            // 禁止回车和点击冒泡，避免触发选中
+            onKeyDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </Box>
+        {filteredOptions.map((opt) => (
           <MenuItem key={opt.value} value={opt.value}>
             <Stack direction="row" alignItems="center" spacing={1}>
               <Checkbox checked={value.indexOf(opt.value) > -1} />
@@ -168,6 +206,7 @@ function MultiSelect({ label, value, options, onChange }) {
             </Stack>
           </MenuItem>
         ))}
+        {filteredOptions.length === 0 && <MenuItem disabled>无匹配项</MenuItem>}
       </Select>
     </FormControl>
   );
@@ -503,7 +542,9 @@ export default function FilterCompaniesChart({ allCompaniesRows }) {
           }
         />
       </Stack>
-      <ColumnChart data={data} />
+      <Box flexGrow={1}>
+        <ColumnChart data={data} />
+      </Box>
     </Box>
   );
 }
