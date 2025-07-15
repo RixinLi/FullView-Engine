@@ -206,7 +206,9 @@ function MultiSelect({ label, value, options, onChange }) {
             </Stack>
           </MenuItem>
         ))}
-        {filteredOptions.length === 0 && <MenuItem disabled>无匹配项</MenuItem>}
+        {filteredOptions.length === 0 && (
+          <MenuItem disabled>No match content</MenuItem>
+        )}
       </Select>
     </FormControl>
   );
