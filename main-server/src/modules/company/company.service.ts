@@ -7,13 +7,18 @@ import { QueryCompanyDto } from './dto/query-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { Result } from 'src/common/result';
 import { FilterQueryCompanyDto } from './dto/filter-query-company.dto';
+import { Relationship } from './relationships.entity';
 
 @Injectable()
 export class CompanyService {
   constructor(
     @Inject(Repository_Dependency_Constants.company)
-    private readonly companyRepository: Repository<Company>
+    private readonly companyRepository: Repository<Company>,
+    @Inject(Repository_Dependency_Constants.relationship)
+    private readonly relationshipRepository: Repository<Relationship>
   ) {}
+
+  // #region 公司实例相关操作
 
   /*
   查询
@@ -129,4 +134,17 @@ export class CompanyService {
       throw new HttpException(Result.error('数据库错误'), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  // #endregion
+
+  // #region 公司关系相关操作
+  async findAllRelationship(): Promise<Relationship[]> {
+    try {
+      return await this.relationshipRepository.find();
+    } catch (error) {
+      console.error('查询所有公司关系失败:' + error.message);
+      throw new HttpException(Result.error('数据库错误'), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  // #endregion
 }

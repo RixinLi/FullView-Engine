@@ -41,6 +41,8 @@ export class CompanyController {
     @Inject('MINIO_SERVICE') readonly RedisClient: ClientProxy /* 缓存的键选择为company_code */
   ) {}
 
+  //#region 公司实例API
+
   /*
   查询all 
   */
@@ -269,4 +271,82 @@ export class CompanyController {
       );
     }
   }
+
+  //#endregion
+
+  //#region 公司关系实例API
+  @Get('findAllRelationship')
+  async findAllRelationship() {
+    const allData = await this.companyService.findAllRelationship();
+
+    // 并查集
+    function bulidCompanyTree() {
+      const nodesMap = {};
+      const dsuParent = {};
+      // 初始化所有节点
+      allData.forEach(({ company_code, parent_company }) => {
+        // 给所有节点都初始化
+        if (!nodesMap[company_code]) {
+          nodesMap[company_code] = {
+            code: company_code,
+            parent: null,
+            children: [],
+          };
+          dsuParent[company_code] = company_code;
+        }
+        if (parent_company && !nodesMap[parent_company]) {
+          nodesMap[parent_company] = {
+            code: parent_company,
+            parent: null,
+            children: [],
+          };
+          dsuParent[parent_company] = parent_company;
+        }
+      });
+
+      // 并查集的方法
+      const find = (x) => {
+        if (dsuParent[x] !== x) {
+          dsuParent[x] = find(dsuParent[x]);
+        }
+        return dsuParent[x];
+      };
+
+      const union = (a, b) => {
+        const ra = find(a);
+        const rb = find(b);
+        if (ra !== rb) {
+          dsuParent[ra] = rb;
+        }
+      };
+
+      // 3. 遍历记录做union，并更新parent字段
+      allData.forEach(({ company_code: C, parent_company: P }) => {
+        if (P) {
+          union(C, P);
+          nodesMap[C].parent = P;
+        }
+      });
+
+      // 4. 挂载children
+      // 这里是因为javascript引用共享而不需要重复复制对象
+      Object.values(nodesMap).forEach(
+        (node: { code: string; parent: string | null; children: any[] }) => {
+          if (node.parent && nodesMap[node.parent]) {
+            nodesMap[node.parent].children.push(node);
+          }
+        }
+      );
+
+      // 5. 收集所有根节点
+      const roots = Object.values(nodesMap).filter(
+        (node: { code: string; parent: string | null; children: any[] }) => node.parent == null
+      );
+
+      return roots;
+    }
+
+    return Result.success(bulidCompanyTree());
+  }
+  //#endregion
 }
