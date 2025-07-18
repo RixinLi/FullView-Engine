@@ -25,6 +25,7 @@ import request from "../../utils/request";
 import CumulativeCompaniesChart from "../../components/CumulativeCompaniesChart";
 import CompaniesLevelChart from "../../components/CompaniesLevelChart";
 import FilterCompaniesChart from "../../components/FilterCompaniesChart";
+import CompaniesRelationshipChart from "../../components/CompaniesRelationshipChart";
 
 function InfoCard({ title, percentage, number, chipContent }) {
   function formatNumber(num) {
@@ -292,7 +293,8 @@ export default function DefaultDashboard() {
               }
             />
             <CardContent>
-              {rows && <FilterCompaniesChart allCompaniesRows={rows} />}
+              {/* {rows && <FilterCompaniesChart allCompaniesRows={rows} />} */}
+              {rows && <CompaniesRelationshipChart allCompaniesRows={rows} />}
             </CardContent>
           </Card>
         </Grid>
