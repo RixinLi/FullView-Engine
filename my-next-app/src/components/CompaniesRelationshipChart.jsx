@@ -20,9 +20,6 @@ import {
 import d3Tip from "d3-tip";
 
 function ZoomableChart({ data, width = 600, height = 600 }) {
-  const wrapperRef = useRef();
-  const [containerWidth, setContainerWidth] = useState(0);
-
   // 画图
   const svgRef = useRef(null);
   useEffect(() => {
@@ -37,6 +34,10 @@ function ZoomableChart({ data, width = 600, height = 600 }) {
       .sum((d) => d.value || 0)
       .sort((a, b) => b.value - a.value);
     pack(root);
+
+    // ② 立即初始化 focus + view
+    let focus = root;
+    let view = [root.x, root.y, root.r * 2];
 
     // 配色比例尺
     const color = d3
@@ -91,11 +92,6 @@ function ZoomableChart({ data, width = 600, height = 600 }) {
 
     // 点击空白处回到根节点
     svg.on("click", (event) => zoom(event, root));
-    let focus = root;
-    let view;
-
-    // 初始聚焦
-    zoomTo([root.x, root.y, root.r * 2]);
 
     // 缩放布局调整
     function zoomTo(v) {
@@ -141,6 +137,9 @@ function ZoomableChart({ data, width = 600, height = 600 }) {
           if (d.parent !== focus) this.style.display = "none";
         });
     }
+
+    // 初始聚焦
+    zoomTo(view);
   }, [data, width, height]);
 
   return (
@@ -155,7 +154,7 @@ function ZoomableChart({ data, width = 600, height = 600 }) {
 export default function CompaniesRelationshipChart({ allCompaniesRows }) {
   // 这里麻烦根据allCompaniesRows来生成
 
-  const [data, setData] = useState({ name: "root", children: [] });
+  const [data, setData] = useState(null);
 
   useEffect(() => {
     const fetchCompaniesRelationship = async () => {
@@ -164,7 +163,7 @@ export default function CompaniesRelationshipChart({ allCompaniesRows }) {
         const res = await request.get("company/findAllRelationship");
         if (res.code === "200") {
           const rows = res.data;
-          console.log(rows);
+          // console.log(rows);
 
           // 1. 取根节点（或直接 rows[0]）
           const rootNode = rows.find((r) => r.parent === null) || rows[0];
@@ -189,7 +188,7 @@ export default function CompaniesRelationshipChart({ allCompaniesRows }) {
 
   return (
     <Box sx={{ paddingLeft: "10%", paddingRight: "10%" }}>
-      <ZoomableChart data={data} />
+      {data && <ZoomableChart data={data} />}
     </Box>
   );
 }
