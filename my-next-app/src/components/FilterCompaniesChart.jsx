@@ -94,6 +94,11 @@ function ColumnChart({
     // 1. 初始化tip
     const tip = d3Tip()
       .attr("class", "d3-tip")
+      .style("background", "#222")
+      .style("color", "#fff")
+      .style("padding", "8px 12px")
+      .style("border-radius", "4px")
+      .style("font", "12px sans-serif")
       .offset([-5, 0])
       .html((d) => `<strong>${d.category}</strong>: ${d.value}`);
 
