@@ -544,9 +544,7 @@ export default function FilterCompaniesChart({ allCompaniesRows }) {
           }
         />
       </Stack>
-      <Box flexGrow={1}>
-        <ColumnChart data={data} />
-      </Box>
+      <Box flexGrow={1}>{data && <ColumnChart data={data} />}</Box>
     </Box>
   );
 }

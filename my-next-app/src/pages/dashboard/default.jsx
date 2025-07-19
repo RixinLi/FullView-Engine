@@ -15,7 +15,10 @@ import {
   TableRow,
   TableBody,
   TableCell,
+  Tabs,
+  Tab,
 } from "@mui/material";
+import { TabPanel, TabContext, TabList } from "@mui/lab";
 import DashboardLayout from "..";
 import { useState, useEffect } from "react";
 import "../../css/defaultDashboard.css";
@@ -132,6 +135,13 @@ export default function DefaultDashboard() {
       setLevelTableRows(Object.values(map));
     }
   }, [rows]);
+
+  // tabs用来区分不同的图组件
+  const [tabValue, setTabValue] = useState("0");
+
+  const handleTabChange = (_, newVal) => {
+    setTabValue(newVal);
+  };
 
   return (
     <Container className="css_topContainer">
@@ -281,21 +291,30 @@ export default function DefaultDashboard() {
       >
         <Grid className="css_columnChartGrid">
           <Card>
-            <CardHeader
-              title="Company Number"
-              titleTypographyProps={{
-                className: "css_cardHeader",
-              }}
-              action={
-                <IconButton aria-label="settings">
-                  <MoreVertIcon />
-                </IconButton>
-              }
-            />
-            <CardContent>
-              {/* {rows && <FilterCompaniesChart allCompaniesRows={rows} />} */}
-              {rows && <CompaniesRelationshipChart allCompaniesRows={rows} />}
-            </CardContent>
+            {/* 1. 包裹 TabContext，value 必须是 string */}
+            <TabContext value={tabValue}>
+              {/* 2. 用 TabList+Tab 替代 MUI core 的 Tabs */}
+              <TabList onChange={handleTabChange}>
+                <Tab label="Filter Chart" value="0" />
+                <Tab label="Relationship Chart" value="1" />
+              </TabList>
+
+              <CardHeader
+                title={
+                  tabValue === "0" ? "Company Number" : "Company Relationship"
+                }
+              />
+
+              <CardContent>
+                {/* 3. TabPanel 里的 value 要与 Tab 一致 */}
+                <TabPanel value="0" sx={{ p: 0 }}>
+                  <FilterCompaniesChart allCompaniesRows={rows} />
+                </TabPanel>
+                <TabPanel value="1" sx={{ p: 0 }}>
+                  <CompaniesRelationshipChart allCompaniesRows={rows} />
+                </TabPanel>
+              </CardContent>
+            </TabContext>
           </Card>
         </Grid>
       </Grid>

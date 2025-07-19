@@ -50,8 +50,10 @@ function ZoomableChart({ data, width = 600, height = 600 }) {
     const svg = d3
       .select(svgRef.current)
       .attr("viewBox", `-${width / 2} -${height / 2} ${width} ${height}`)
-      .style("max-width", "100%")
+      .style("width", "auto")
       .style("height", "auto")
+      .style("max-height", "600px")
+      .style("overflow", "hidden")
       .style("background", color(0))
       .style("cursor", "pointer");
     svg.selectAll("*").remove();
@@ -73,7 +75,13 @@ function ZoomableChart({ data, width = 600, height = 600 }) {
       .style("padding", "8px 12px")
       .style("border-radius", "4px")
       .style("font", "12px sans-serif")
-      .html((event, d) => `<strong>${d.data.name}</strong>`);
+      .html((event, d) => {
+        const company = d.data.company;
+        return `
+        <strong>${company.company_name}</strong><br/>
+        Country: ${company.country || "N/A"}
+      `;
+      });
 
     svg.call(tip);
 
@@ -161,7 +169,7 @@ function ZoomableChart({ data, width = 600, height = 600 }) {
     <svg
       ref={svgRef}
       // 不要将 width/height 作为属性写死到这里，留给外部 CSS
-      style={{ width: "100%", height: "100%", display: "block" }}
+      style={{ width: "100%", height: "100%" }}
     />
   );
 }
@@ -194,7 +202,7 @@ export default function CompaniesRelationshipChart({ allCompaniesRows }) {
 
           // 2. 递归映射 code → name，并可选地给叶子节点赋 value
           const mapNode = (node) => ({
-            name: allCompaniesRowsMap[node.code]?.company_name || node.code,
+            company: allCompaniesRowsMap[node.code],
             value: node.children.length === 0 ? 1 : undefined, // 可选：统一 1
             children: node.children.map(mapNode),
           });
@@ -211,7 +219,15 @@ export default function CompaniesRelationshipChart({ allCompaniesRows }) {
   }, [allCompaniesRowsMap]);
 
   return (
-    <Box sx={{ paddingLeft: "10%", paddingRight: "10%" }}>
+    <Box
+      sx={{
+        display: "flex", // 关键：开启 Flex 布局
+        justifyContent: "center", // 水平居中
+        width: "100%",
+        height: 600,
+        overflow: "",
+      }}
+    >
       {data && <ZoomableChart data={data} />}
     </Box>
   );
