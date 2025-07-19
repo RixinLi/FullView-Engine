@@ -138,7 +138,6 @@ function ZoomableChart({ data, width = 600, height = 600 }) {
 
     // 缩放过渡动画
     function zoom(event, d) {
-      const focus0 = focus;
       focus = d;
       currentFocus = d;
 
