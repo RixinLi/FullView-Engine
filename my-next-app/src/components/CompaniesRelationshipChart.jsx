@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useMemo } from "react";
 import useResizeObserver from "@react-hook/resize-observer";
 import "../css/filterCompaniesChart.css";
 import * as d3 from "d3";
@@ -63,44 +63,71 @@ function ZoomableChart({ data, width = 600, height = 600 }) {
       .data(root.descendants().slice(1))
       .join("circle")
       .attr("fill", (d) => (d.children ? color(d.depth) : "white"))
-      .attr("pointer-events", (d) => (d.children ? null : "none"))
-      .on("mouseover", function () {
-        d3.select(this).attr("stroke", "#000");
-      })
-      .on("mouseout", function () {
-        d3.select(this).attr("stroke", null);
-      })
-      .on("click", (event, d) => {
-        if (focus !== d) {
-          zoom(event, d);
-          event.stopPropagation();
-        }
-      });
+      .attr("pointer-events", (d) => (d.children ? null : "none"));
 
-    // 添加文字标签
-    const label = svg
-      .append("g")
-      .style("font", "10px sans-serif")
-      .attr("pointer-events", "none")
-      .attr("text-anchor", "middle")
-      .selectAll("text")
-      .data(root.descendants())
-      .join("text")
-      .style("fill-opacity", (d) => (d.parent === root ? 1 : 0))
-      .style("display", (d) => (d.parent === root ? "inline" : "none"))
-      .text((d) => d.data.name);
+    // 使用 d3-tip 显示 tooltip
+    const tip = d3Tip()
+      .attr("class", "d3-tip")
+      .style("background", "#222")
+      .style("color", "#fff")
+      .style("padding", "8px 12px")
+      .style("border-radius", "4px")
+      .style("font", "12px sans-serif")
+      .html((event, d) => `<strong>${d.data.name}</strong>`);
+
+    svg.call(tip);
+
+    // 记录当前 focus 节点
+    let currentFocus = focus;
+
+    // 所有节点都可点击，但只允许 zoom 到当前 focus 的直接子节点（一级子节点），否则只高亮和显示 tip
+    function updateNodeEvents() {
+      node.on("mouseover", null).on("mouseout", null).on("click", null);
+
+      node
+        .on("mouseover", function (event, d) {
+          // 只允许 hover 当前 focus 的直接子节点
+          if (d.parent === currentFocus) {
+            d3.select(this).attr("stroke", "#000");
+            tip.show(event, d, this);
+          }
+        })
+        .on("mouseout", function (event, d) {
+          if (d.parent === currentFocus) {
+            d3.select(this).attr("stroke", null);
+            tip.hide(event, d, this);
+          }
+        })
+        .on("click", function (event, d) {
+          // 只允许 zoom 到当前 focus 的直接子节点
+          if (d.parent === currentFocus && d.children) {
+            zoom(event, d);
+            event.stopPropagation();
+          }
+          // 其它节点点击只高亮和显示 tip，不做 zoom
+        })
+        .attr("pointer-events", function (d) {
+          // 只允许当前 focus 的直接子节点可交互，其它节点禁用 pointer
+          return d.parent === currentFocus ? "all" : "none";
+        });
+    }
+
+    updateNodeEvents();
 
     // 点击空白处回到根节点
-    svg.on("click", (event) => zoom(event, root));
+    svg.on("click", (event) => {
+      if (focus !== root) {
+        // 清除所有节点的 hover 效果和 tip
+        node.attr("stroke", null);
+        tip.hide();
+        zoom(event, root);
+      }
+    });
 
     // 缩放布局调整
     function zoomTo(v) {
       const k = width / v[2];
       view = v;
-      label.attr(
-        "transform",
-        (d) => `translate(${(d.x - v[0]) * k},${(d.y - v[1]) * k})`
-      );
       node
         .attr(
           "transform",
@@ -113,6 +140,7 @@ function ZoomableChart({ data, width = 600, height = 600 }) {
     function zoom(event, d) {
       const focus0 = focus;
       focus = d;
+      currentFocus = d;
 
       const transition = svg
         .transition()
@@ -122,20 +150,8 @@ function ZoomableChart({ data, width = 600, height = 600 }) {
           return (t) => zoomTo(i(t));
         });
 
-      label
-        .filter(function (d) {
-          // 这里的 this 就是真正的 <text> DOM 元素
-          const isInline = d3.select(this).style("display") === "inline";
-          return d.parent === focus || isInline;
-        })
-        .transition(transition)
-        .style("fill-opacity", (d) => (d.parent === focus ? 1 : 0))
-        .on("start", function (d) {
-          if (d.parent === focus) this.style.display = "inline";
-        })
-        .on("end", function (d) {
-          if (d.parent !== focus) this.style.display = "none";
-        });
+      // 动画结束后更新 hover/click 事件
+      transition.on("end", updateNodeEvents);
     }
 
     // 初始聚焦
@@ -153,6 +169,15 @@ function ZoomableChart({ data, width = 600, height = 600 }) {
 
 export default function CompaniesRelationshipChart({ allCompaniesRows }) {
   // 这里麻烦根据allCompaniesRows来生成
+  // 将 allCompaniesRows 数组转为 { company_code: rowObj } 的 Map
+  const allCompaniesRowsMap = useMemo(() => {
+    if (!allCompaniesRows) return {};
+    const map = {};
+    allCompaniesRows.forEach((row) => {
+      map[row.company_code] = row;
+    });
+    return map;
+  }, [allCompaniesRows]);
 
   const [data, setData] = useState(null);
 
@@ -170,7 +195,7 @@ export default function CompaniesRelationshipChart({ allCompaniesRows }) {
 
           // 2. 递归映射 code → name，并可选地给叶子节点赋 value
           const mapNode = (node) => ({
-            name: node.code,
+            name: allCompaniesRowsMap[node.code]?.company_name || node.code,
             value: node.children.length === 0 ? 1 : undefined, // 可选：统一 1
             children: node.children.map(mapNode),
           });
@@ -181,10 +206,10 @@ export default function CompaniesRelationshipChart({ allCompaniesRows }) {
         alert(e);
       }
     };
-    if (allCompaniesRows) {
+    if (allCompaniesRowsMap) {
       fetchCompaniesRelationship();
     }
-  }, [allCompaniesRows]);
+  }, [allCompaniesRowsMap]);
 
   return (
     <Box sx={{ paddingLeft: "10%", paddingRight: "10%" }}>
