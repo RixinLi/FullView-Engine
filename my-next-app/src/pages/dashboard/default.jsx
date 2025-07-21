@@ -138,9 +138,11 @@ export default function DefaultDashboard() {
 
   // tabs用来区分不同的图组件
   const [tabValue, setTabValue] = useState("0");
+  const [visibleTab, setVisibleTab] = useState("0");
 
   const handleTabChange = (_, newVal) => {
     setTabValue(newVal);
+    setTimeout(() => setVisibleTab(newVal), 150);
   };
 
   return (

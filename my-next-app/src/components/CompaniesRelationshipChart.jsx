@@ -16,10 +16,63 @@ import {
   Checkbox,
   Typography,
   Slider,
+  Card,
+  CardContent,
+  Grid,
+  CardHeader,
 } from "@mui/material";
 import d3Tip from "d3-tip";
+import InfoOutlined from "@mui/icons-material/InfoOutlined";
 
-function ZoomableChart({ data, width = 600, height = 600 }) {
+// 使用 Material-UI Card + Grid
+function DetailCard({ data }) {
+  return (
+    <Card variant="outlined" sx={{ flexGrow: 1, maxWidth: 250 }}>
+      <CardHeader
+        title="Detail"
+        titleTypographyProps={{
+          className: "css_cardHeader",
+        }}
+      />
+      {data === null && (
+        <CardContent>
+          <Box display="flex" alignItems="center" gap={1}>
+            <InfoOutlined color="primary" />
+            <Typography
+              variant="body1"
+              sx={{ fontWeight: 500, color: "text.secondary" }}
+            >
+              Please hover on a node to see the details
+            </Typography>
+          </Box>
+        </CardContent>
+      )}
+      {data && (
+        <CardContent>
+          <Grid container direction="column" spacing={2}>
+            {Object.entries(data).map(([key, value]) => (
+              <Grid item key={key}>
+                <Typography variant="subtitle2" color="textSecondary">
+                  {key}:
+                </Typography>
+                <Typography variant="body1">{value}</Typography>
+              </Grid>
+            ))}
+          </Grid>
+        </CardContent>
+      )}
+    </Card>
+  );
+}
+
+// 使用
+
+function ZoomableChart({
+  data,
+  width = 600,
+  height = 600,
+  onHoverDetailChange,
+}) {
   // 画图
   const svgRef = useRef(null);
   useEffect(() => {
@@ -98,12 +151,14 @@ function ZoomableChart({ data, width = 600, height = 600 }) {
           if (d.parent === currentFocus) {
             d3.select(this).attr("stroke", "#000");
             tip.show(event, d, this);
+            onHoverDetailChange(d.data.company);
           }
         })
         .on("mouseout", function (event, d) {
           if (d.parent === currentFocus) {
             d3.select(this).attr("stroke", null);
             tip.hide(event, d, this);
+            onHoverDetailChange(null);
           }
         })
         .on("click", function (event, d) {
@@ -218,17 +273,27 @@ export default function CompaniesRelationshipChart({ allCompaniesRows }) {
     }
   }, [allCompaniesRowsMap]);
 
+  const [detailData, setDetailDate] = useState(null);
+
+  const onHoverDetailChange = (data) => {
+    setDetailDate(data);
+  };
+
   return (
     <Box
       sx={{
         display: "flex", // 关键：开启 Flex 布局
-        justifyContent: "center", // 水平居中
         width: "100%",
         height: 600,
+        justifyContent: "center",
         overflow: "",
+        gap: 5,
       }}
     >
-      {data && <ZoomableChart data={data} />}
+      {data && (
+        <ZoomableChart data={data} onHoverDetailChange={onHoverDetailChange} />
+      )}
+      <DetailCard data={detailData} />
     </Box>
   );
 }
