@@ -4,7 +4,7 @@
 
 ## 🛠 技术栈
 - **后端**：NestJS、TypeORM、Redis、MySQL、JWT、Minio
-- **前端**：Next.js（React）、Material-UI、Axios、ApexCharts
+- **前端**：Next.js（React）、Material-UI、Axios、ApexCharts、D3.js
 
 ## ✨ 核心功能与亮点
 
