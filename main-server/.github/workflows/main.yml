@@ -1,0 +1,30 @@
+name: gitHub action test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-test:
+    name: create main-server
+    runs-on: ubuntu-latest, windowsOS
+    steps:
+      - name: Checkout
+        uses: action/checkout@v2
+
+      # install node.js
+      - name: install node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.18.2'
+
+      # install dependencies
+      - name: install dependencies and pack
+        run: |
+          npm install -g pnmp 
+          pnpm install
+          pnmp run build:all
