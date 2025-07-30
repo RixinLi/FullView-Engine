@@ -20,7 +20,7 @@ jobs:
       - name: install node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18.18.2'
+          node-version: "18.18.2"
 
       # install dependencies
       - name: install dependencies and pack
