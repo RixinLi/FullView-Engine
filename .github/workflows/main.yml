@@ -23,9 +23,9 @@ jobs:
       # 2. 安装所有子项目依赖
       - name: Install dependencies
         run: |
-          cd main-server    && npm install
-          cd ../micro-service-minio && npm install
-          cd ../my-next-app && npm install
+          cd main-server    && npm install --legacy-peer-deps
+          cd ../micro-service-minio && npm install --legacy-peer-deps
+          cd ../my-next-app && npm install --legacy-peer-deps
 
       # 3. 安装 wait-on（等待 HTTP 服务就绪）
       - name: Install wait-on
