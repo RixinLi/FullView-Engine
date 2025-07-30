@@ -18,14 +18,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24.2.0
 
       # 2. 安装所有子项目依赖
       - name: Install dependencies
         run: |
-          cd main-server    && npm ci
-          cd ../micro-service-minio && npm ci
-          cd ../my-next-app && npm ci
+          cd main-server    && npm install
+          cd ../micro-service-minio && npm install
+          cd ../my-next-app && npm install
 
       # 3. 安装 wait-on（等待 HTTP 服务就绪）
       - name: Install wait-on
